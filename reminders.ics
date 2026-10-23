@@ -1,0 +1,296 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Body Reset Coach//EN
+CALSCALE:GREGORIAN
+X-WR-CALNAME:Body Reset Coach
+BEGIN:VEVENT
+UID:wake@body-reset-coach
+DTSTAMP:20261023T185839Z
+DTSTART:20261025T070000
+DURATION:PT15M
+RRULE:FREQ=DAILY
+SUMMARY:Wake up and drink a glass of water
+DESCRIPTION:Then 5–10 minutes of daylight outside or at a wi
+ ndow. Tick it in Body Reset Coach.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Wake up and drink a glass of water
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:breakfast@body-reset-coach
+DTSTAMP:20261023T185839Z
+DTSTART:20261025T073000
+DURATION:PT15M
+RRULE:FREQ=DAILY
+SUMMARY:Protein breakfast
+DESCRIPTION:2 eggs\, doi or dal\, plus 1 roti or oats. Tea w
+ ithout sugar. Tick it in Body Reset Coach.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Protein breakfast
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:move@body-reset-coach
+DTSTAMP:20261023T185839Z
+DTSTART:20261025T100000
+DURATION:PT15M
+RRULE:FREQ=DAILY
+SUMMARY:Get up and walk for 5 minutes
+DESCRIPTION:Do this every hour you sit. Refill your water bo
+ ttle. Tick it in Body Reset Coach.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Get up and walk for 5 minutes
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:lunch@body-reset-coach
+DTSTAMP:20261023T185839Z
+DTSTART:20261025T123000
+DURATION:PT15M
+RRULE:FREQ=DAILY
+SUMMARY:Lunch: half the plate vegetables
+DESCRIPTION:A palm of fish\, chicken or dal\, and one fist o
+ f rice. About 47 g protein. Tick it in Body Reset Coach.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Lunch: half the plate vegetables
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:walk@body-reset-coach
+DTSTAMP:20261023T185839Z
+DTSTART:20261025T130000
+DURATION:PT15M
+RRULE:FREQ=DAILY
+SUMMARY:10–15 minute walk after lunch
+DESCRIPTION:It lowers the blood sugar spike after eating. Ti
+ ck it in Body Reset Coach.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:10–15 minute walk after lunch
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:snack@body-reset-coach
+DTSTAMP:20261023T185839Z
+DTSTART:20261025T160000
+DURATION:PT15M
+RRULE:FREQ=DAILY
+SUMMARY:Smart snack\, only if hungry
+DESCRIPTION:Fruit\, plain doi or roasted chana. No biscuits 
+ or fried snacks. Tick it in Body Reset Coach.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Smart snack\, only if hungry
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:dinner@body-reset-coach
+DTSTAMP:20261023T185839Z
+DTSTART:20261025T193000
+DURATION:PT15M
+RRULE:FREQ=DAILY
+SUMMARY:Dinner: plate method\, lighter on rice
+DESCRIPTION:Finish 3 hours before bed. Nothing to eat after 
+ this. Tick it in Body Reset Coach.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Dinner: plate method\, lighter on rice
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:steps@body-reset-coach
+DTSTAMP:20261023T185839Z
+DTSTART:20261025T210000
+DURATION:PT15M
+RRULE:FREQ=DAILY
+SUMMARY:Check your step goal
+DESCRIPTION:Short? A 15 minute walk now closes the gap. Tick
+ s itself when you enter your steps. Tick it in Body Reset Co
+ ach.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Check your step goal
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:water@body-reset-coach
+DTSTAMP:20261023T185839Z
+DTSTART:20261025T213000
+DURATION:PT15M
+RRULE:FREQ=DAILY
+SUMMARY:Drink all 12 glasses of water
+DESCRIPTION:Ticks itself when you fill the last glass. Tick 
+ it in Body Reset Coach.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Drink all 12 glasses of water
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:drinks@body-reset-coach
+DTSTAMP:20261023T185839Z
+DTSTART:20261025T220000
+DURATION:PT15M
+RRULE:FREQ=DAILY
+SUMMARY:No sugary drinks today
+DESCRIPTION:No soft drinks\, juice or sugar in tea. Tick it 
+ in Body Reset Coach.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:No sugary drinks today
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:winddown@body-reset-coach
+DTSTAMP:20261023T185839Z
+DTSTART:20261025T221500
+DURATION:PT15M
+RRULE:FREQ=DAILY
+SUMMARY:Phone away\, wind down
+DESCRIPTION:Dim the lights\, shower\, stretch or read. Tick 
+ it in Body Reset Coach.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Phone away\, wind down
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:sleep@body-reset-coach
+DTSTAMP:20261023T185839Z
+DTSTART:20261025T230000
+DURATION:PT15M
+RRULE:FREQ=DAILY
+SUMMARY:Lights out
+DESCRIPTION:Aim for 7–8 hours. Same bedtime on weekends. Tic
+ k it in Body Reset Coach.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Lights out
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:train-SU@body-reset-coach
+DTSTAMP:20261023T185839Z
+DTSTART:20261025T173000
+DURATION:PT15M
+RRULE:FREQ=WEEKLY;BYDAY=SU
+SUMMARY:Workout: Rest day + stretching
+DESCRIPTION:10 minutes of gentle stretching and an easy walk
+  if you feel like it. Recovery is where the progress happens
+ . Open the Workouts tab for the exercises.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Workout: Rest day + stretching
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:train-MO@body-reset-coach
+DTSTAMP:20261023T185839Z
+DTSTART:20261026T173000
+DURATION:PT15M
+RRULE:FREQ=WEEKLY;BYDAY=MO
+SUMMARY:Workout: Strength A + short walk
+DESCRIPTION:Strength A\, then a 15 minute walk. Open the Wor
+ kouts tab for the exercises.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Workout: Strength A + short walk
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:train-TU@body-reset-coach
+DTSTAMP:20261023T185839Z
+DTSTART:20261027T173000
+DURATION:PT15M
+RRULE:FREQ=WEEKLY;BYDAY=TU
+SUMMARY:Workout: Walking day
+DESCRIPTION:Your main walk for the phase. Split it into two 
+ walks if that's easier. Open the Workouts tab for the exerci
+ ses.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Workout: Walking day
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:train-WE@body-reset-coach
+DTSTAMP:20261023T185839Z
+DTSTART:20261028T173000
+DURATION:PT15M
+RRULE:FREQ=WEEKLY;BYDAY=WE
+SUMMARY:Workout: Strength B + short walk
+DESCRIPTION:Strength B\, then a 15 minute walk. Open the Wor
+ kouts tab for the exercises.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Workout: Strength B + short walk
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:train-TH@body-reset-coach
+DTSTAMP:20261023T185839Z
+DTSTART:20261029T173000
+DURATION:PT15M
+RRULE:FREQ=WEEKLY;BYDAY=TH
+SUMMARY:Workout: Walking day
+DESCRIPTION:Your main walk for the phase. Try a new route to
+  keep it interesting. Open the Workouts tab for the exercise
+ s.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Workout: Walking day
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:train-FR@body-reset-coach
+DTSTAMP:20261023T185839Z
+DTSTART:20261030T173000
+DURATION:PT15M
+RRULE:FREQ=WEEKLY;BYDAY=FR
+SUMMARY:Workout: Strength A
+DESCRIPTION:Strength A. Try to beat Monday by one rep or a b
+ it more weight. Open the Workouts tab for the exercises.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Workout: Strength A
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+BEGIN:VEVENT
+UID:train-SA@body-reset-coach
+DTSTAMP:20261023T185839Z
+DTSTART:20261031T173000
+DURATION:PT15M
+RRULE:FREQ=WEEKLY;BYDAY=SA
+SUMMARY:Workout: Long walk
+DESCRIPTION:Your longest walk of the week. Go with a friend\
+ , a podcast or music. Open the Workouts tab for the exercise
+ s.
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:Workout: Long walk
+TRIGGER:PT0M
+END:VALARM
+END:VEVENT
+END:VCALENDAR

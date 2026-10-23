@@ -1,0 +1,1099 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Body Reset Coach</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Body Reset">
+<meta name="theme-color" content="#0d7451">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Spline+Sans+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: sticky coach header with tabs, one column of working panels that splits in two on wide screens */
+:root {
+  --bg: #eef3ef;
+  --surface: #ffffff;
+  --sunk: #e3ebe5;
+  --ink: #15201a;
+  --muted: #5a6b61;
+  --line: #d3ddd6;
+  --accent: #0d7451;
+  --accent-ink: #ffffff;
+  --accent-soft: #d8ede2;
+  --warm: #b86e0c;
+  --warm-soft: #f6e8d2;
+  --danger: #b3261e;
+  --danger-soft: #f8dcd9;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --font-num: "Spline Sans Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --r: 14px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0d1411; --surface: #151f1a; --sunk: #1b2721; --ink: #e5eee8; --muted: #91a398; --line: #26352d;
+    --accent: #47c18b; --accent-ink: #06140d; --accent-soft: #173828; --warm: #e5a548; --warm-soft: #3a2a12;
+    --danger: #f2776d; --danger-soft: #3d1a17; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0d1411; --surface: #151f1a; --sunk: #1b2721; --ink: #e5eee8; --muted: #91a398; --line: #26352d;
+  --accent: #47c18b; --accent-ink: #06140d; --accent-soft: #173828; --warm: #e5a548; --warm-soft: #3a2a12;
+  --danger: #f2776d; --danger-soft: #3d1a17; color-scheme: dark;
+}
+/* keeps content clear of the iPhone notch and home bar when installed */
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 48px;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.15; }
+h2 { font-size: 1.45rem; font-weight: 700; }
+h3 { font-size: 1.1rem; font-weight: 700; }
+p { margin: 0; }
+.num { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
+.muted { color: var(--muted); }
+.small { font-size: .875rem; }
+.label { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
+
+/* Header */
+header.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
+  margin: 0 auto; max-width: 1040px; padding-block: 14px 0; border-bottom: 1px solid var(--line);
+}
+.brand { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.brand h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: -.01em; }
+.brand h1 span { color: var(--accent); }
+.daychip { font-family: var(--font-num); font-size: .85rem; color: var(--muted); }
+nav.tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; margin-top: 10px; }
+nav.tabs::-webkit-scrollbar { display: none; }
+nav.tabs button {
+  border: 0; background: none; padding: 10px 12px; border-bottom: 3px solid transparent; cursor: pointer;
+  font-weight: 700; color: var(--muted); white-space: nowrap;
+}
+nav.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+
+main { max-width: 1040px; margin: 0 auto; padding-top: 20px; display: grid; gap: 20px; }
+section.view { display: grid; gap: 20px; }
+.grid2 { display: grid; gap: 20px; grid-template-columns: 1fr; }
+@media (min-width: 820px) { .grid2 { grid-template-columns: 1fr 1fr; align-items: start; } .grid2 > .wide { grid-column: 1 / -1; } }
+.grid2 > * { min-width: 0; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 14px; min-width: 0; }
+.panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+
+/* Hero numbers */
+.hero { display: grid; gap: 14px; }
+.hero-line { font-family: var(--font-display); font-size: clamp(1.5rem, 4vw, 2.2rem); font-weight: 700; line-height: 1.15; max-width: 30ch; }
+.hero-line em { font-style: normal; color: var(--accent); }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+.stat { background: var(--sunk); border-radius: 12px; padding: 12px 14px; display: grid; gap: 2px; }
+.stat b { font-family: var(--font-num); font-size: 1.35rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.stat .sub { font-size: .8rem; color: var(--muted); }
+
+/* Notices */
+.note { border-radius: 12px; padding: 12px 14px; background: var(--warm-soft); display: grid; gap: 8px; }
+.note.ok { background: var(--accent-soft); }
+.note.bad { background: var(--danger-soft); }
+.note strong { font-family: var(--font-display); }
+
+/* Checklist */
+.checks { display: grid; gap: 6px; list-style: none; margin: 0; padding: 0; }
+.check { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; padding: 10px; border-radius: 10px; cursor: pointer; }
+.check:hover { background: var(--sunk); }
+.check input { appearance: none; width: 24px; height: 24px; border: 2px solid var(--line); border-radius: 7px; margin: 0; display: grid; place-content: center; cursor: pointer; background: var(--surface); }
+.check input:checked { background: var(--accent); border-color: var(--accent); }
+.check input:checked::after { content: ""; width: 6px; height: 11px; border: solid var(--accent-ink); border-width: 0 3px 3px 0; transform: translateY(-1px) rotate(45deg); }
+.check .t { font-weight: 700; }
+.check .d { font-size: .85rem; color: var(--muted); }
+.check.done .t { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--accent); }
+
+/* Meter */
+.meter { height: 10px; background: var(--sunk); border-radius: 99px; overflow: hidden; }
+.meter i { display: block; height: 100%; background: var(--accent); border-radius: 99px; transition: width .3s; }
+.meter.warm i { background: var(--warm); }
+
+/* Water */
+.glasses { display: flex; flex-wrap: wrap; gap: 6px; }
+.glass { width: 30px; height: 38px; border: 2px solid var(--line); border-radius: 4px 4px 9px 9px; background: var(--surface); cursor: pointer; position: relative; overflow: hidden; padding: 0; }
+.glass.full { border-color: var(--accent); }
+.glass.full::after { content: ""; position: absolute; inset: 30% 0 0; background: var(--accent); opacity: .75; }
+
+/* Inputs */
+.field { display: grid; gap: 4px; min-width: 0; }
+.field label { font-size: .85rem; font-weight: 700; color: var(--muted); }
+.field input, .field select, textarea {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg);
+}
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
+.row > .field { flex: 1 1 120px; }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 10px 14px; font-weight: 700; cursor: pointer; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.danger { color: var(--danger); border-color: var(--danger); }
+.btn:disabled { opacity: .5; cursor: default; }
+.btn.small { padding: 6px 10px; font-size: .85rem; }
+
+/* Timed checklist + reminders */
+.tm { font-family: var(--font-num); font-size: .8rem; font-weight: 600; color: var(--accent); }
+.ti.now .check { background: var(--accent-soft); }
+.ti.late .tm { color: var(--warm); }
+.ti.done .tm { color: var(--muted); }
+.remind { border: 2px solid var(--accent); }
+.remind h2 { font-size: 1.3rem; }
+#toast { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; pointer-events: none;
+  padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.toast-card { pointer-events: auto; max-width: 560px; margin: 0 auto; background: var(--surface); border: 2px solid var(--accent); border-radius: var(--r);
+  padding: 16px; display: grid; gap: 8px; box-shadow: 0 12px 40px rgb(0 0 0 / .28); }
+.toast-t { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; }
+
+/* Week strip */
+.week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.wd { border: 1px solid var(--line); border-radius: 10px; padding: 8px 4px; text-align: center; display: grid; gap: 2px; font-size: .78rem; }
+.wd b { font-family: var(--font-display); font-size: .9rem; }
+.wd.today { border-color: var(--accent); background: var(--accent-soft); }
+
+/* Exercises */
+.ex-list { display: grid; gap: 10px; }
+.ex { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 6px; }
+.ex-top { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: baseline; }
+.ex-top h3 { font-size: 1rem; }
+.dose { font-family: var(--font-num); font-size: .85rem; background: var(--sunk); border-radius: 6px; padding: 2px 8px; white-space: nowrap; }
+.ex .alt { font-size: .85rem; color: var(--muted); }
+.phases { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
+.phase { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 4px; }
+.phase.on { border-color: var(--accent); background: var(--accent-soft); }
+.pill { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 2px 8px; border-radius: 99px; background: var(--accent); color: var(--accent-ink); }
+.pill.warm { background: var(--warm); }
+.pill.bad { background: var(--danger); color: var(--surface); }
+
+/* Plate */
+.plate-wrap { display: grid; grid-template-columns: 170px 1fr; gap: 18px; align-items: center; }
+@media (max-width: 520px) { .plate-wrap { grid-template-columns: 1fr; justify-items: center; } }
+.plate-wrap svg { width: 170px; height: 170px; }
+.legend { display: grid; gap: 8px; }
+.legend div { display: grid; grid-template-columns: 14px 1fr; gap: 10px; align-items: start; }
+.legend i { width: 14px; height: 14px; border-radius: 4px; margin-top: 4px; }
+
+/* Tables */
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+td.n { font-family: var(--font-num); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* Meals */
+.meals { display: grid; gap: 10px; }
+.meal { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 12px 0; border-top: 1px solid var(--line); }
+.meal:first-child { border-top: 0; }
+.meal .k { grid-column: 2; grid-row: 1; font-family: var(--font-num); color: var(--muted); font-size: .85rem; }
+
+/* Chart */
+.chart svg { width: 100%; height: auto; display: block; }
+.chart text { fill: var(--muted); font-family: var(--font-num); font-size: 11px; }
+.heat { display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 4px; }
+.heat i { aspect-ratio: 1; border-radius: 4px; background: var(--sunk); max-width: 100%; }
+.heat i[data-l="1"] { background: color-mix(in srgb, var(--accent) 30%, var(--sunk)); }
+.heat i[data-l="2"] { background: color-mix(in srgb, var(--accent) 60%, var(--sunk)); }
+.heat i[data-l="3"] { background: var(--accent); }
+.heat i.today { outline: 2px solid var(--warm); outline-offset: 1px; }
+.miles { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.miles li { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: center; }
+.miles .dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--line); }
+.miles li.hit .dot { background: var(--accent); border-color: var(--accent); }
+
+ul.plain { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+.sync { font-size: .78rem; color: var(--muted); }
+footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<header class="top">
+  <div class="brand">
+    <h1>Body <span>Reset</span> Coach</h1>
+    <span class="daychip" id="daychip"></span>
+  </div>
+  <nav class="tabs" role="tablist" id="tabs">
+    <button role="tab" data-tab="today" id="tab-today">Today</button>
+    <button role="tab" data-tab="train" id="tab-train">Workouts</button>
+    <button role="tab" data-tab="food" id="tab-food">Food</button>
+    <button role="tab" data-tab="progress" id="tab-progress">Progress</button>
+    <button role="tab" data-tab="health" id="tab-health">Doctor's list</button>
+    <button role="tab" data-tab="me" id="tab-me">My details</button>
+  </nav>
+</header>
+
+<main id="app"></main>
+<div id="toast" hidden></div>
+
+<footer>
+  <p>General health and fitness guidance, not a medical diagnosis. Check with your doctor before starting if you have heart, blood pressure, sugar or joint problems. <span class="sync" id="sync">Saved on this device.</span></p>
+</footer>
+
+<script>
+(() => {
+  "use strict";
+
+  // ---------- dates ----------
+  const pad = n => String(n).padStart(2, "0");
+  const keyOf = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const parseKey = k => { const [y, m, d] = k.split("-").map(Number); return new Date(y, m - 1, d); };
+  const addDays = (k, n) => { const d = parseKey(k); d.setDate(d.getDate() + n); return keyOf(d); };
+  const diffDays = (a, b) => Math.round((parseKey(b) - parseKey(a)) / 864e5);
+  const today = () => keyOf(new Date());
+  const fmtDate = k => parseKey(k).toLocaleDateString(undefined, { day: "numeric", month: "short" });
+  const fmtDateLong = k => parseKey(k).toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" });
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const r1 = n => Math.round(n * 10) / 10;
+
+  // ---------- state ----------
+  const LS_KEY = "body-reset-coach-v1";
+  function defaultState() {
+    const t = today();
+    return {
+      v: 1, updatedAt: 0,
+      profile: { name: "", age: 30, sex: "m", heightCm: 175.3, startWeight: 90, activity: 1.2, wake: "07:00", startDate: t, confirmed: false },
+      days: {},
+      labs: {}, sleep: {}
+    };
+  }
+  function loadLocal() {
+    try { const raw = localStorage.getItem(LS_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+    return null;
+  }
+  let state = loadLocal() || defaultState();
+  let tab = "today";
+  try { tab = localStorage.getItem(LS_KEY + ":tab") || "today"; } catch (e) {}
+  if (location.hash && document.getElementById("tab-" + location.hash.slice(1))) tab = location.hash.slice(1);
+
+  function save() {
+    state.updatedAt = Date.now();
+    try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+    queuePush();
+    render();
+  }
+  const day = k => (state.days[k] = state.days[k] || {});
+
+  // ---------- account sync (only inside the Claude artifact viewer) ----------
+  let remoteRef = null, pushTimer = null, pushing = Promise.resolve();
+  const syncEl = document.getElementById("sync");
+  function queuePush() {
+    if (!remoteRef) return;
+    clearTimeout(pushTimer);
+    pushTimer = setTimeout(() => {
+      pushing = pushing.then(() => remoteRef.set({ json: JSON.stringify(state), updatedAt: state.updatedAt }))
+        .then(() => { syncEl.textContent = "Synced to your account."; })
+        .catch(() => { syncEl.textContent = "Saved on this device. Account sync failed, will retry on your next change."; });
+    }, 1200);
+  }
+  async function initSync() {
+    try {
+      if (!window.claude || typeof window.claude.use !== "function") return;
+      const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+      if (!db || !user) return;
+      const id = await user.id();
+      if (!id) return;
+      remoteRef = db.doc("data/users/" + id + "/coach");
+      const snap = await remoteRef.get();
+      const remote = snap.exists ? snap.data() : null;
+      if (remote && remote.json && (remote.updatedAt || 0) > (state.updatedAt || 0)) {
+        state = JSON.parse(remote.json);
+        try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
+        render();
+        syncEl.textContent = "Synced to your account.";
+      } else if (state.updatedAt) {
+        queuePush();
+      } else {
+        syncEl.textContent = "Account sync is on.";
+      }
+    } catch (e) { /* stays local-only */ }
+  }
+
+  // ---------- the numbers ----------
+  function weights() {
+    return Object.keys(state.days).filter(k => typeof state.days[k].weight === "number").sort()
+      .map(k => ({ k, w: state.days[k].weight }));
+  }
+  function calc() {
+    const p = state.profile;
+    const ws = weights();
+    const current = ws.length ? ws[ws.length - 1].w : p.startWeight;
+    const h = p.heightCm / 100;
+    const bmi = current / (h * h);
+    const bmr = 10 * current + 6.25 * p.heightCm - 5 * p.age + (p.sex === "f" ? -161 : 5);
+    const tdee = bmr * p.activity;
+    const floor = p.sex === "f" ? 1300 : 1500;
+    const target = Math.max(floor, Math.round((tdee - 500) / 50) * 50);
+    const healthy = 24.9 * h * h;
+    const protein = Math.round((1.6 * Math.min(current, healthy + 5)) / 5) * 5;
+    const glasses = Math.round(Math.min(30 * current, 3000) / 250);
+    const dayNo = Math.max(1, diffDays(p.startDate, today()) + 1);
+    const week = Math.ceil(dayNo / 7);
+    const phase = week <= 4 ? 1 : week <= 8 ? 2 : 3;
+    const steps = week <= 2 ? 6000 : week <= 4 ? 7000 : week <= 8 ? 8500 : 10000;
+    return { current, bmi, bmr, tdee, target, healthy, protein, glasses, dayNo, week, phase, steps, h, ws };
+  }
+  function bmiClass(b) {
+    if (b < 18.5) return ["Underweight", "warm"];
+    if (b < 25) return ["Healthy range", "ok"];
+    if (b < 30) return ["Overweight", "warm"];
+    if (b < 35) return ["Obesity, class I", "bad"];
+    if (b < 40) return ["Obesity, class II", "bad"];
+    return ["Obesity, class III", "bad"];
+  }
+
+  // ---------- training plan ----------
+  const PHASES = [
+    { n: 1, weeks: "Weeks 1–4", name: "Build the habit", sets: "2 sets", reps: "8–10 reps", walk: "20–30 min easy walk", walkTip: "Easy pace: you can hold a full conversation.", effort: "Finish feeling you could do 4 more reps. Talking while walking should be easy." },
+    { n: 2, weeks: "Weeks 5–8", name: "Get stronger", sets: "3 sets", reps: "10–12 reps", walk: "35–45 min brisk walk", walkTip: "Brisk pace: you can talk, but not sing.", effort: "Last 2 reps feel hard but clean. Brisk walk: you can talk, but not sing." },
+    { n: 3, weeks: "Weeks 9–12", name: "Turn it up", sets: "3 sets", reps: "8–12 reps, add load", walk: "45–60 min, with intervals", walkTip: "Intervals: 2 min fast, 1 min easy, repeat 6 times, then walk easy.", effort: "Add weight (backpack, bottles, dumbbells) when 12 reps feel easy. Intervals: 2 min fast, 1 min easy, ×6." }
+  ];
+  const EX = {
+    A: [
+      { n: "Sit-to-stand (chair squat)", d: "Sit on a firm chair, feet flat, stand up by pushing through your heels, sit back down slowly. Knees follow your toes.", easy: "Use a higher seat or push off your thighs.", hard: "Hold a backpack against your chest or lower the seat." },
+      { n: "Wall or counter push-up", d: "Hands on a wall or kitchen counter, body in one straight line, lower your chest toward it, push back.", easy: "Stand closer to the wall.", hard: "Use a lower surface: table, then sofa edge." },
+      { n: "Glute bridge", d: "Lie on your back, knees bent, squeeze your bum and lift your hips until your body is straight from knees to shoulders. Pause 2 seconds.", easy: "Smaller lift.", hard: "One leg at a time, or a weight on your hips." },
+      { n: "Bent-over row (backpack or bottles)", d: "One hand on a chair, back flat, pull a loaded bag or water bottle up to your ribs. Squeeze your shoulder blade.", easy: "Lighter bag.", hard: "Heavier bag, slower lowering (3 seconds)." },
+      { n: "Dead bug", d: "On your back, arms up, knees bent at 90°. Lower opposite arm and leg slowly while your lower back stays pressed to the floor.", easy: "Move only the legs.", hard: "Straighten the leg further." },
+      { n: "Farmer carry", d: "Hold two heavy bags or buckets, stand tall, walk 30–40 steps. Great for grip, posture and core.", easy: "Lighter load.", hard: "Heavier load, longer walk." }
+    ],
+    B: [
+      { n: "Step-up", d: "Use the bottom stair (low step). Step up with one foot, stand fully, step down slowly. Hold the rail if you need it.", easy: "Lower step, hold the rail.", hard: "Higher step or carry weight." },
+      { n: "Incline push-up (table)", d: "Hands on a sturdy table, body straight, lower chest to the edge and push away.", easy: "Go back to the wall.", hard: "Lower surface or slower reps." },
+      { n: "Hip hinge (good morning)", d: "Hands on hips, soft knees, push your hips back while your back stays flat until you feel the hamstrings stretch, then stand tall.", easy: "Smaller range.", hard: "Hold a backpack against your chest." },
+      { n: "Towel or band pull-apart", d: "Hold a towel or resistance band at chest height, pull it apart hard and squeeze your shoulder blades for 2 seconds.", easy: "Less tension.", hard: "Stronger band, more reps." },
+      { n: "Side plank on knees", d: "Lie on your side, elbow under shoulder, knees bent, lift your hips into a straight line. Hold.", easy: "Shorter hold.", hard: "Straight legs." },
+      { n: "Bird dog", d: "On hands and knees, reach opposite arm and leg out long, hold 3 seconds, switch sides. Keep your hips level.", easy: "Arm only or leg only.", hard: "Longer holds." }
+    ]
+  };
+  // weekday 0=Sunday
+  const WEEK = [
+    { short: "Rest", title: "Rest day + stretching", kind: "rest", desc: "10 minutes of gentle stretching and an easy walk if you feel like it. Recovery is where the progress happens." },
+    { short: "Str A", title: "Strength A + short walk", kind: "A", desc: "Strength A, then a 15 minute walk." },
+    { short: "Walk", title: "Walking day", kind: "walk", desc: "Your main walk for the phase. Split it into two walks if that's easier." },
+    { short: "Str B", title: "Strength B + short walk", kind: "B", desc: "Strength B, then a 15 minute walk." },
+    { short: "Walk", title: "Walking day", kind: "walk", desc: "Your main walk for the phase. Try a new route to keep it interesting." },
+    { short: "Str A", title: "Strength A", kind: "A", desc: "Strength A. Try to beat Monday by one rep or a bit more weight." },
+    { short: "Long", title: "Long walk", kind: "walk", desc: "Your longest walk of the week. Go with a friend, a podcast or music." }
+  ];
+
+  // ---------- daily checklist (times are minutes after waking) ----------
+  function checklist(c) {
+    const w = WEEK[new Date().getDay()];
+    const wake = state.profile.wake || "07:00";
+    return [
+      { id: "wake", at: 0, t: "Wake up and drink a glass of water", d: "Then 5–10 minutes of daylight outside or at a window." },
+      { id: "breakfast", at: 30, t: "Protein breakfast", d: "2 eggs, doi or dal, plus 1 roti or oats. Tea without sugar." },
+      { id: "move", at: 180, t: "Get up and walk for 5 minutes", d: "Do this every hour you sit. Refill your water bottle." },
+      { id: "lunch", at: 330, t: "Lunch: half the plate vegetables", d: `A palm of fish, chicken or dal, and one fist of rice. About ${Math.round(c.protein / 3)} g protein.` },
+      { id: "walk", at: 360, t: "10–15 minute walk after lunch", d: "It lowers the blood sugar spike after eating." },
+      { id: "snack", at: 540, t: "Smart snack, only if hungry", d: "Fruit, plain doi or roasted chana. No biscuits or fried snacks." },
+      { id: "train", at: 630, t: `Workout: ${w.title}`, d: w.kind === "rest" ? "10 minutes of stretching. Rest counts." : "Open the Workouts tab for today's session." },
+      { id: "dinner", at: 750, t: "Dinner: plate method, lighter on rice", d: "Finish 3 hours before bed. Nothing to eat after this." },
+      { id: "steps", at: 840, t: `Reach ${c.steps.toLocaleString()} steps`, d: "Short? A 15 minute walk now closes the gap. Ticks itself when you enter your steps." },
+      { id: "water", at: 870, t: `Drink all ${c.glasses} glasses of water`, d: "Ticks itself when you fill the last glass." },
+      { id: "drinks", at: 900, t: "No sugary drinks today", d: "No soft drinks, juice or sugar in tea." },
+      { id: "winddown", at: 915, t: "Phone away, wind down", d: "Dim the lights, shower, stretch or read." },
+      { id: "sleep", at: 960, t: "Lights out", d: "Aim for 7–8 hours. Same bedtime on weekends." }
+    ].map(it => ({ ...it, time: shift(wake, it.at) }));
+  }
+  // minutes since today's wake-up time (negative between midnight and waking)
+  function relNow() {
+    const [h, m] = (state.profile.wake || "07:00").split(":").map(Number);
+    const n = new Date();
+    return n.getHours() * 60 + n.getMinutes() - (h * 60 + m);
+  }
+  function statusOf(it, d, rel) {
+    if (d.h && d.h[it.id]) return "done";
+    if (rel < it.at) return "later";
+    return rel < it.at + 60 ? "now" : "late";
+  }
+  function inMinutes(n) {
+    const h = Math.floor(n / 60), m = n % 60;
+    return h ? `${h} h${m ? " " + m + " min" : ""}` : `${m} min`;
+  }
+
+  // ---------- phone calendar file ----------
+  function buildICS() {
+    const items = checklist(calc()).filter(it => it.id !== "train");
+    const wake = state.profile.wake || "07:00";
+    const start = addDays(today(), 1);
+    const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d+/, "");
+    const icsEsc = s => String(s).replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
+    const fold = line => { const out = []; for (let i = 0; i < line.length; i += 60) out.push((i ? " " : "") + line.slice(i, i + 60)); return out.join("\r\n"); };
+    const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Body Reset Coach//EN", "CALSCALE:GREGORIAN", "X-WR-CALNAME:Body Reset Coach"];
+    const ev = (uid, dateKey, time, title, desc, rrule) => lines.push(
+      "BEGIN:VEVENT", `UID:${uid}@body-reset-coach`, `DTSTAMP:${stamp}`,
+      `DTSTART:${dateKey.replace(/-/g, "")}T${time.replace(":", "")}00`, "DURATION:PT15M", `RRULE:${rrule}`,
+      fold(`SUMMARY:${icsEsc(title)}`), fold(`DESCRIPTION:${icsEsc(desc)}`),
+      "BEGIN:VALARM", "ACTION:DISPLAY", fold(`DESCRIPTION:${icsEsc(title)}`), "TRIGGER:PT0M", "END:VALARM", "END:VEVENT");
+    // the step goal grows each phase, so the calendar title stays general
+    items.forEach(it => ev(it.id, start, it.time, it.id === "steps" ? "Check your step goal" : it.t, it.d + " Tick it in Body Reset Coach.", "FREQ=DAILY"));
+    const BYDAY = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
+    WEEK.forEach((w, i) => {
+      let k = start; while (parseKey(k).getDay() !== i) k = addDays(k, 1);
+      ev("train-" + BYDAY[i], k, shift(wake, 630), "Workout: " + w.title, w.desc + " Open the Workouts tab for the exercises.", "FREQ=WEEKLY;BYDAY=" + BYDAY[i]);
+    });
+    lines.push("END:VCALENDAR");
+    return lines.join("\r\n") + "\r\n";
+  }
+  window.BodyReset = { ics: buildICS };
+
+  // ---------- views ----------
+  function viewToday(c) {
+    const t = today(), d = day(t), H = checklist(c), rel = relNow();
+    const doneN = H.filter(h => d.h && d.h[h.id]).length;
+    const pct = Math.round((doneN / H.length) * 100);
+    const [cls, tone] = bmiClass(c.bmi);
+    const lost = r1(state.profile.startWeight - c.current);
+    const w = WEEK[new Date().getDay()];
+    const p = state.profile;
+    const wake = p.wake || "07:00";
+    const water = d.water || 0;
+    const steps = d.steps || 0;
+    return `
+      ${nextUpCard(H, d, rel)}
+      <div class="panel hero">
+        <p class="label">${esc(fmtDateLong(t))} · Week ${c.week}, phase ${c.phase}</p>
+        <p class="hero-line">${p.name ? esc(p.name) + ", today" : "Today"} is about <em>${w.title.toLowerCase()}</em>, ${c.target.toLocaleString()} kcal and ${c.protein} g protein.</p>
+        <div class="stats">
+          <div class="stat"><span class="label">Weight</span><b>${r1(c.current)} kg</b><span class="sub">${lost > 0 ? "−" + lost + " kg since start" : "starting point"}</span></div>
+          <div class="stat"><span class="label">BMI</span><b>${r1(c.bmi)}</b><span class="sub">${cls}</span></div>
+          <div class="stat"><span class="label">Eat about</span><b>${c.target.toLocaleString()}</b><span class="sub">kcal a day</span></div>
+          <div class="stat"><span class="label">Today's score</span><b>${doneN}/${H.length}</b><span class="sub">${pct >= 75 ? "Great day" : pct >= 50 ? "Good, keep going" : "Small wins count"}</span></div>
+        </div>
+      </div>
+      <div class="grid2">
+        <div class="panel">
+          <div class="panel-head"><h2>Today's checklist</h2><span class="num muted">${doneN}/${H.length} done</span></div>
+          <div class="meter"><i style="width:${pct}%"></i></div>
+          <p class="small muted">Did it? Tick it. Times follow your ${fmt12(wake)} wake-up.</p>
+          <ul class="checks">
+            ${H.map(h => { const s = statusOf(h, d, rel); return `<li class="ti ${s}"><label class="check ${s === "done" ? "done" : ""}"><input type="checkbox" data-habit="${h.id}" id="h-${h.id}" ${s === "done" ? "checked" : ""}><span><span class="tm">${fmt12(h.time)}</span>${s === "now" ? ' <span class="pill">now</span>' : s === "late" ? ' <span class="pill warm">not ticked</span>' : ""}<br><span class="t">${esc(h.t)}</span><br><span class="d">${esc(h.d)}</span></span></label></li>`; }).join("")}
+          </ul>
+        </div>
+        <div style="display:grid;gap:20px;min-width:0">
+          <div class="panel">
+            <div class="panel-head"><h3>Water</h3><span class="num muted">${water}/${c.glasses} glasses</span></div>
+            <div class="glasses">${Array.from({ length: c.glasses }, (_, i) => `<button class="glass ${i < water ? "full" : ""}" data-water="${i + 1}" aria-label="${i + 1} glasses"></button>`).join("")}</div>
+            <p class="small muted">One glass is about 250 ml. Tap a glass to fill up to it.</p>
+          </div>
+          <div class="panel">
+            <div class="panel-head"><h3>Steps</h3><span class="num muted">${steps.toLocaleString()} / ${c.steps.toLocaleString()}</span></div>
+            <div class="meter"><i style="width:${Math.min(100, (steps / c.steps) * 100)}%"></i></div>
+            <div class="row">
+              <div class="field"><label for="in-steps">Steps today</label><input id="in-steps" type="number" min="0" step="100" inputmode="numeric" value="${steps || ""}" placeholder="e.g. 6500"></div>
+            </div>
+          </div>
+          <div class="panel">
+            <h3>Weigh-in</h3>
+            <p class="small muted">Weigh in the morning, after the toilet, before eating. Daily numbers jump around by 1–2 kg; the weekly trend is what matters.</p>
+            <div class="row">
+              <div class="field"><label for="in-weight">Weight (kg)</label><input id="in-weight" type="number" step="0.1" min="30" max="300" inputmode="decimal" value="${d.weight ?? ""}" placeholder="${r1(c.current)}"></div>
+              <div class="field"><label for="in-waist">Waist (cm, optional)</label><input id="in-waist" type="number" step="0.5" min="40" max="200" inputmode="decimal" value="${d.waist ?? ""}" placeholder="at belly button"></div>
+            </div>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  function nextUpCard(H, d, rel) {
+    const on = !!(state.reminders && state.reminders.on);
+    const now = H.filter(h => statusOf(h, d, rel) === "now");
+    const late = H.filter(h => statusOf(h, d, rel) === "late");
+    const next = H.find(h => statusOf(h, d, rel) === "later");
+    let head, body = "", act = "";
+    if (now.length) {
+      head = `Now: ${esc(now[0].t)}`;
+      body = esc(now[0].d);
+      act = `<button class="btn primary" data-done="${now[0].id}">I did it, tick it</button>`;
+    } else if (next) {
+      head = `Next at ${fmt12(next.time)}: ${esc(next.t)}`;
+      body = `In ${inMinutes(next.at - rel)}. ${esc(next.d)}`;
+    } else if (late.length) {
+      head = "Day's almost done";
+      body = "Tick anything below that you did today.";
+    } else {
+      head = "All done today. Great work.";
+      body = "Rest well. Tomorrow's checklist starts at your wake-up time.";
+    }
+    return `
+      <div class="panel remind">
+        <div class="panel-head"><span class="label">Reminder</span><button class="btn small ${on ? "primary" : ""}" id="r-toggle" aria-pressed="${on}">${on ? "Reminders on" : "Turn on reminders"}</button></div>
+        <h2>${head}</h2>
+        <p class="small muted">${body}</p>
+        ${late.length ? `<p class="small" style="color:var(--warm)">${late.length} earlier ${late.length === 1 ? "task isn't" : "tasks aren't"} ticked yet. If you did ${late.length === 1 ? "it" : "them"}, tick ${late.length === 1 ? "it" : "them"} in the checklist.</p>` : ""}
+        <div class="row">${act}<button class="btn" id="r-cal">Add reminders to my phone calendar</button></div>
+        <p class="small muted" id="r-msg">${on ? "A pop-up and a sound remind you at each time while this app is open." : "Reminders pop up with a sound at each time while this app is open."} For alarms when it's closed, add them to your phone calendar.</p>
+      </div>`;
+  }
+
+  function fmt12(hhmm) {
+    let [h, m] = hhmm.split(":").map(Number);
+    const ap = h >= 12 ? "pm" : "am"; h = h % 12 || 12;
+    return `${h}:${pad(m)} ${ap}`;
+  }
+  function shift(hhmm, mins) {
+    const [h, m] = hhmm.split(":").map(Number);
+    let t = (h * 60 + m + mins) % 1440; if (t < 0) t += 1440;
+    return `${pad(Math.floor(t / 60))}:${pad(t % 60)}`;
+  }
+  function actOptions(v) {
+    return [[1.2, "Mostly sitting (desk, little walking)"], [1.375, "Lightly active (some walking daily)"], [1.55, "Active (on feet most of the day)"]]
+      .map(([x, l]) => `<option value="${x}" ${Number(v) === x ? "selected" : ""}>${l}</option>`).join("");
+  }
+
+  function viewTrain(c) {
+    const wd = new Date().getDay(); const w = WEEK[wd]; const ph = PHASES[c.phase - 1];
+    const order = [1, 2, 3, 4, 5, 6, 0];
+    const names = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+    const exHtml = k => EX[k].map(e => `
+      <div class="ex">
+        <div class="ex-top"><h3>${e.n}</h3><span class="dose">${e.n.startsWith("Farmer") ? "2–3 × 30–40 steps" : e.n.startsWith("Side plank") ? ph.sets + " × 15–30 s / side" : e.n.startsWith("Bird") || e.n.startsWith("Dead") ? ph.sets + " × 6–8 / side" : ph.sets + " × " + ph.reps}</span></div>
+        <p class="small">${e.d}</p>
+        <p class="alt">Easier: ${e.easy} · Harder: ${e.hard}</p>
+      </div>`).join("");
+    let todayBlock;
+    if (w.kind === "A" || w.kind === "B") todayBlock = `<div class="ex-list">${exHtml(w.kind)}</div>`;
+    else if (w.kind === "walk") todayBlock = `<div class="note ok"><strong>${ph.walk}</strong><p class="small">${ph.walkTip} Knees or feet sore? Swap for cycling or swimming at the same effort.</p></div>`;
+    else todayBlock = `<div class="note ok"><strong>Stretch for 10 minutes</strong><p class="small">Hold each for 30 seconds, no bouncing: calf stretch on a wall, hip flexor lunge, hamstring stretch on a step, chest stretch in a doorway, child's pose, neck rolls.</p></div>`;
+    return `
+      <div class="panel">
+        <div class="panel-head"><h2>Today: ${w.title}</h2><span class="pill">Phase ${c.phase} · ${ph.name}</span></div>
+        <p class="small muted">${w.desc} Warm up first: 5 minutes of marching on the spot, arm circles and 10 slow half-squats.</p>
+        ${todayBlock}
+      </div>
+      <div class="panel">
+        <h2>This week</h2>
+        <div class="week">${order.map(i => `<div class="wd ${i === wd ? "today" : ""}"><span class="muted">${names[i]}</span><b>${WEEK[i].short}</b></div>`).join("")}</div>
+      </div>
+      <div class="panel">
+        <h2>The 12-week plan</h2>
+        <p class="small muted">Built for a heavier body that's starting out: low impact, kind to knees and back, done at home with a chair, a step and a backpack. No running or jumping until you're under about 95 kg and your knees feel good.</p>
+        <div class="phases">${PHASES.map(p => `<div class="phase ${p.n === c.phase ? "on" : ""}"><span class="label">${p.weeks}</span><h3>${p.name}</h3><p class="small">Strength: ${p.sets} × ${p.reps}</p><p class="small">Cardio: ${p.walk}</p><p class="small muted">${p.effort}</p></div>`).join("")}</div>
+      </div>
+      <div class="grid2">
+        <div class="panel"><h2>Strength A</h2><div class="ex-list">${exHtml("A")}</div></div>
+        <div class="panel"><h2>Strength B</h2><div class="ex-list">${exHtml("B")}</div></div>
+      </div>
+      <div class="note bad">
+        <strong>Stop straight away and get medical help if you feel:</strong>
+        <p class="small">chest pain or pressure, pain spreading to your arm, jaw or back, severe breathlessness, dizziness or fainting, or a racing or irregular heartbeat. Normal muscle soreness 1–2 days later is fine; sharp joint pain is not.</p>
+      </div>`;
+  }
+
+  function viewFood(c) {
+    const meals = [
+      ["Breakfast", "2 eggs (boiled, or an omelette with onion, tomato, chilli in 1 tsp oil) + 1 atta roti + cucumber. Tea or coffee without sugar.", 400],
+      ["Lunch", "1 cup cooked rice (one fist) + fish or chicken curry (one palm, light oil) + big bowl of shak or sabzi + small bowl of dal.", 600],
+      ["Snack", "1 fruit (guava, apple, orange, papaya) + 1 cup plain doi or a handful of roasted chana.", 220],
+      ["Dinner", "2 roti + chicken, fish, egg curry or extra dal + mixed vegetables + salad.", 550],
+      ["Extra if needed", "A cup of milk, more vegetables, or one more egg if you're truly hungry.", 150]
+    ];
+    const tot = meals.reduce((s, m) => s + m[2], 0);
+    const swaps = [
+      ["Soft drink, juice, sweet lassi", "Water with lemon, soda water, black coffee, unsweetened tea", "150–250 kcal a glass"],
+      ["2–3 plates of rice", "1 fist of rice + double vegetables", "300–500 kcal a meal"],
+      ["Paratha, puri, luchi", "Atta roti (no ghee) or 1 small paratha a week", "150–200 kcal each"],
+      ["Singara, samosa, chips, fried snacks", "Roasted chana, jhal muri with lots of veg, boiled egg, fruit", "150–300 kcal"],
+      ["Mishti, sweets after meals", "Fruit, or one small sweet on a planned day", "150–250 kcal each"],
+      ["Biryani, kacchi, fast food", "Keep for one meal a week, smaller plate, salad first", "500–900 kcal"],
+      ["2–3 tsp sugar in tea", "Cut half a spoon each week until zero", "~50 kcal a cup"],
+      ["Cooking with lots of oil", "Measure: about 1 tbsp per person per meal", "120 kcal per extra tbsp"]
+    ];
+    return `
+      <div class="panel hero">
+        <p class="label">Your daily targets</p>
+        <p class="hero-line">Eat about <em>${c.target.toLocaleString()} kcal</em> with ${c.protein} g of protein. That's a steady loss of about 0.5–0.7 kg a week.</p>
+        <div class="stats">
+          <div class="stat"><span class="label">Your burn</span><b>${Math.round(c.tdee).toLocaleString()}</b><span class="sub">kcal/day at current weight</span></div>
+          <div class="stat"><span class="label">Target</span><b>${c.target.toLocaleString()}</b><span class="sub">500 kcal below burn</span></div>
+          <div class="stat"><span class="label">Protein</span><b>${c.protein} g</b><span class="sub">about ${Math.round(c.protein / 3)} g per meal</span></div>
+          <div class="stat"><span class="label">Fibre</span><b>30 g</b><span class="sub">vegetables, dal, fruit</span></div>
+        </div>
+        <p class="small muted">Targets recalculate as your weight drops. You don't need to count calories every day: follow the plate method and the swaps, and count for a week now and then to check.</p>
+      </div>
+      <div class="grid2">
+        <div class="panel">
+          <h2>The plate method</h2>
+          <div class="plate-wrap">
+            <svg viewBox="0 0 100 100" role="img" aria-label="Plate: half vegetables, a quarter protein, a quarter carbs">
+              <circle cx="50" cy="50" r="48" fill="var(--sunk)" stroke="var(--line)" stroke-width="1.5"/>
+              <path d="M50 50 L50 6 A44 44 0 0 1 50 94 Z" fill="var(--accent)" opacity=".85"/>
+              <path d="M50 50 L50 94 A44 44 0 0 1 6 50 Z" fill="var(--warm)" opacity=".85"/>
+              <path d="M50 50 L6 50 A44 44 0 0 1 50 6 Z" fill="var(--muted)" opacity=".55"/>
+            </svg>
+            <div class="legend">
+              <div><i style="background:var(--accent)"></i><span><b>Half: vegetables</b><br><span class="small muted">Shak, lau, begun, cauliflower, cabbage, beans, salad.</span></span></div>
+              <div><i style="background:var(--warm)"></i><span><b>Quarter: protein</b><br><span class="small muted">Fish, chicken, eggs, dal, doi, chana. One palm-size piece.</span></span></div>
+              <div><i style="background:var(--muted)"></i><span><b>Quarter: carbs</b><br><span class="small muted">Rice (one fist), roti, potato. Brown rice or atta when you can.</span></span></div>
+            </div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>A sample day</h2><span class="num muted">≈ ${tot.toLocaleString()} kcal</span></div>
+          <div class="meals">${meals.map(m => `<div class="meal"><b>${m[0]}</b><span class="k">~${m[2]} kcal</span><p class="small muted" style="grid-column:1/-1">${m[1]}</p></div>`).join("")}</div>
+        </div>
+        <div class="panel wide">
+          <h2>Easy swaps</h2>
+          <div class="tbl-wrap"><table>
+            <thead><tr><th>Instead of</th><th>Have</th><th>You save</th></tr></thead>
+            <tbody>${swaps.map(s => `<tr><td>${s[0]}</td><td>${s[1]}</td><td class="n">${s[2]}</td></tr>`).join("")}</tbody>
+          </table></div>
+        </div>
+        <div class="panel wide">
+          <h2>Rules that make it work</h2>
+          <ul class="plain">
+            <li><b>Don't drink your calories.</b> Cutting soft drinks and sugar in tea alone can lose you several kilos.</li>
+            <li><b>Protein and vegetables first,</b> rice last. You'll naturally eat less of it.</li>
+            <li><b>Eat slowly.</b> Put the spoon down between bites. Fullness takes about 20 minutes to reach your brain.</li>
+            <li><b>Plan the treats.</b> 80% on plan, 20% flexible. One biryani on Friday is fine; daily snacks from the shop add up.</li>
+            <li><b>Keep junk out of the house.</b> What's on the counter gets eaten.</li>
+            <li><b>Don't crash diet.</b> Eating under ${state.profile.sex === "f" ? "1,300" : "1,500"} kcal makes you lose muscle, feel weak and quit.</li>
+          </ul>
+        </div>
+      </div>`;
+  }
+
+  function viewProgress(c) {
+    const p = state.profile, ws = c.ws, h2 = c.h * c.h;
+    const start = p.startWeight;
+    const lost = r1(start - c.current);
+    const pctLost = r1((lost / start) * 100);
+    const wk = weekChange(ws);
+    const rate = 0.6;
+    const miles = [
+      [start * 0.95, "Lose 5% of body weight", "Blood pressure, sugar and joint pain start improving"],
+      [30 * h2, "BMI under 30", "Out of the obesity range"],
+      [start * 0.9, "Lose 10% of body weight", "Big drop in diabetes and heart risk, less liver fat"],
+      [27.5 * h2, "BMI under 27.5", "Below the higher-risk line used for South Asian adults"],
+      [24.9 * h2, "BMI under 25", "Healthy weight range"]
+    ].sort((a, b) => b[0] - a[0]);
+    const H = checklist(c).length;
+    const heat = Array.from({ length: 56 }, (_, i) => {
+      const k = addDays(today(), i - 55); const d = state.days[k];
+      const n = d && d.h ? Object.values(d.h).filter(Boolean).length : 0;
+      const l = n === 0 ? 0 : n < H / 2 ? 1 : n < H ? 2 : 3;
+      return `<i data-l="${l}" class="${k === today() ? "today" : ""}" title="${fmtDate(k)}: ${n}/${H}"></i>`;
+    }).join("");
+    const recent = ws.slice().reverse().slice(0, 14);
+    return `
+      <div class="panel hero">
+        <p class="label">Since ${fmtDate(p.startDate)}</p>
+        <p class="hero-line">${lost > 0 ? `You're down <em>${lost} kg</em>, ${pctLost}% of where you started.` : `Starting at <em>${r1(start)} kg</em>. Every weigh-in from here builds your trend.`}</p>
+        <div class="stats">
+          <div class="stat"><span class="label">Current</span><b>${r1(c.current)} kg</b><span class="sub">BMI ${r1(c.bmi)}</span></div>
+          <div class="stat"><span class="label">Last 7 days</span><b>${wk === null ? "–" : (wk > 0 ? "+" : wk < 0 ? "−" : "") + Math.abs(wk) + " kg"}</b><span class="sub">${wk === null ? "needs a week of weigh-ins" : wk <= -1.2 ? "fast, eat a bit more" : wk < 0 ? "right on track" : "plateaus are normal"}</span></div>
+          <div class="stat"><span class="label">Next goal</span><b>${(() => { const m = miles.find(m => c.current > m[0]); return m ? r1(m[0]) + " kg" : "Done!"; })()}</b><span class="sub">${(() => { const m = miles.find(m => c.current > m[0]); return m ? m[1] : "Keep it up"; })()}</span></div>
+          <div class="stat"><span class="label">Healthy weight</span><b>${Math.round(18.5 * h2)}–${Math.round(24.9 * h2)}</b><span class="sub">kg for your height</span></div>
+        </div>
+      </div>
+      <div class="panel chart">
+        <div class="panel-head"><h2>Weight trend</h2><span class="small muted">dots: weigh-ins · solid: 7-day average · dashed: plan at ${rate} kg/week</span></div>
+        ${chart(ws, start, p.startDate, miles, rate)}
+      </div>
+      <div class="grid2">
+        <div class="panel">
+          <h2>Milestones</h2>
+          <ul class="miles">${miles.map(([w, t, why]) => {
+            const hit = c.current <= w;
+            const weeksAway = Math.max(0, Math.ceil((c.current - w) / rate));
+            return `<li class="${hit ? "hit" : ""}"><span class="dot"></span><span><b>${t}</b><br><span class="small muted">${why}</span></span><span class="num small">${r1(w)} kg<br><span class="muted">${hit ? "reached" : "~" + fmtDate(addDays(today(), weeksAway * 7))}</span></span></li>`;
+          }).join("")}</ul>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>Habit days</h2><span class="small muted">last 8 weeks</span></div>
+          <div class="heat">${heat}</div>
+          <p class="small muted">Darker means more of your daily checklist ticked. Aim to fill most squares, not every one.</p>
+        </div>
+        <div class="panel wide">
+          <h2>Weigh-in log</h2>
+          ${recent.length ? `<div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Weight</th><th>Waist</th><th></th></tr></thead><tbody>
+            ${recent.map(e => `<tr><td>${fmtDate(e.k)}</td><td class="n">${r1(e.w)} kg</td><td class="n">${state.days[e.k].waist ? state.days[e.k].waist + " cm" : "–"}</td><td><button class="btn small" data-delw="${e.k}">Remove</button></td></tr>`).join("")}
+          </tbody></table></div>` : `<p class="muted">No weigh-ins yet. Add today's weight on the Today tab.</p>`}
+          <div class="row">
+            <div class="field"><label for="add-date">Add a past weigh-in</label><input id="add-date" type="date" max="${today()}" value="${addDays(today(), -1)}"></div>
+            <div class="field"><label for="add-w">Weight (kg)</label><input id="add-w" type="number" step="0.1" min="30" max="300" inputmode="decimal"></div>
+            <button class="btn" id="add-btn">Add</button>
+          </div>
+        </div>
+      </div>`;
+  }
+  function weekChange(ws) {
+    if (ws.length < 2) return null;
+    const last = ws[ws.length - 1];
+    const ref = ws.slice().reverse().find(e => diffDays(e.k, last.k) >= 6);
+    if (!ref) return null;
+    return r1(last.w - ref.w);
+  }
+  function chart(ws, start, startDate, miles, rate) {
+    const W = 640, Ht = 260, L = 44, R = 12, T = 12, B = 28;
+    const lastK = ws.length ? ws[ws.length - 1].k : startDate;
+    const span = Math.max(84, diffDays(startDate, lastK) + 7);
+    const plan = [0, span].map(dd => start - (rate * dd) / 7);
+    const vals = ws.map(e => e.w).concat(plan, [start, miles[1][0]]);
+    let lo = Math.floor(Math.min(...vals) - 1), hi = Math.ceil(Math.max(...vals) + 1);
+    const step = hi - lo > 24 ? 5 : 2;
+    lo = Math.floor(lo / step) * step; hi = Math.ceil(hi / step) * step;
+    const x = dd => L + (dd / span) * (W - L - R);
+    const y = v => T + ((hi - v) / (hi - lo)) * (Ht - T - B);
+    let g = "";
+    for (let v = lo; v <= hi; v += step) g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${v}</text>`;
+    for (let wk = 0; wk <= span / 7; wk += span > 120 ? 4 : 2) g += `<text x="${x(wk * 7)}" y="${Ht - 8}" text-anchor="middle">w${wk}</text>`;
+    miles.slice(0, 2).forEach(([v, t]) => { if (v > lo && v < hi) g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--warm)" stroke-dasharray="2 4" stroke-width="1.5"/><text x="${W - R}" y="${y(v) - 5}" text-anchor="end" style="fill:var(--warm)">${t.replace("Lose ", "−").replace(" of body weight", "")}</text>`; });
+    g += `<line x1="${x(0)}" y1="${y(plan[0])}" x2="${x(span)}" y2="${y(plan[1])}" stroke="var(--muted)" stroke-dasharray="6 5" stroke-width="1.5"/>`;
+    const pts = ws.map(e => ({ dd: diffDays(startDate, e.k), w: e.w })).filter(p => p.dd >= 0);
+    const avg = pts.map((p, i) => { const win = pts.slice(Math.max(0, i - 6), i + 1); return { dd: p.dd, w: win.reduce((s, q) => s + q.w, 0) / win.length }; });
+    if (avg.length > 1) g += `<polyline points="${avg.map(p => x(p.dd) + "," + y(p.w)).join(" ")}" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>`;
+    g += pts.map((p, i) => `<circle cx="${x(p.dd)}" cy="${y(p.w)}" r="${i === pts.length - 1 ? 5.5 : 3.5}" fill="${i === pts.length - 1 ? "var(--accent)" : "var(--surface)"}" stroke="var(--accent)" stroke-width="2"/>`).join("");
+    if (pts.length) { const lp = pts[pts.length - 1]; g += `<text x="${Math.min(x(lp.dd) + 9, W - R - 40)}" y="${y(lp.w) - 9}" style="fill:var(--ink);font-weight:600">${r1(lp.w)}</text>`; }
+    return `<svg viewBox="0 0 ${W} ${Ht}" role="img" aria-label="Weight chart">${g}</svg>`;
+  }
+
+  function viewHealth(c) {
+    const p = state.profile;
+    const [cls] = bmiClass(c.bmi);
+    const labs = [
+      ["bp", "Blood pressure", "Check at a pharmacy or clinic. Above 130/80 needs follow-up. Losing weight lowers it."],
+      ["hba1c", "HbA1c or fasting blood sugar", "Checks for prediabetes and type 2 diabetes, which are common at this weight."],
+      ["lipid", "Lipid profile", "Cholesterol and triglycerides. Fasting sample usually."],
+      ["lft", "Liver function (ALT, AST) and ultrasound if advised", "Fatty liver is very common with belly fat and reverses with weight loss."],
+      ["tsh", "Thyroid (TSH)", "An underactive thyroid can cause weight gain and tiredness."],
+      ["vitd", "Vitamin D", "Often low; affects energy, mood and muscles."],
+      ["kidney", "Creatinine and uric acid", "Kidney function and gout risk."],
+      ["waist", "Measure your waist", "At the belly button, relaxed. Under 90 cm is the target for South Asian men (94 cm for others)."]
+    ];
+    const sb = state.sleep || {};
+    const auto = { bmi: c.bmi > 35, age: p.age > 50, male: p.sex === "m" };
+    const sbItems = [
+      ["snore", "Do you snore loudly (heard through a closed door)?"],
+      ["tired", "Do you often feel tired or sleepy during the day?"],
+      ["observed", "Has anyone seen you stop breathing or choke in your sleep?"],
+      ["pressure", "Do you have, or take medicine for, high blood pressure?"],
+      ["neck", "Is your shirt collar size over 40 cm (about 16 inches)?"]
+    ];
+    const score = sbItems.filter(([k]) => sb[k]).length + Object.values(auto).filter(Boolean).length;
+    const tone = score >= 5 ? "bad" : score >= 3 ? "" : "ok";
+    const labsDone = labs.filter(([k]) => state.labs[k]).length;
+    return `
+      <div class="note">
+        <strong>I'm not a doctor</strong>
+        <p class="small">This is general guidance based on standard medical advice for adults. Please see a real doctor once at the start: they can check things an app can't and adjust the plan if you have a condition or take medicine.</p>
+      </div>
+      <div class="panel hero">
+        <p class="label">Where you are now</p>
+        <p class="hero-line">BMI <em>${r1(c.bmi)}</em> (${cls}). Losing just 5–10% (${r1(p.startWeight * 0.05)}–${r1(p.startWeight * 0.1)} kg) brings real health gains.</p>
+        <p class="small muted">BMI = weight ÷ height². For South Asian adults, health risks begin at a lower BMI (from about 23), so belly fat and blood tests matter as much as the scale.</p>
+      </div>
+      <div class="grid2">
+        <div class="panel">
+          <div class="panel-head"><h2>Get these checked</h2><span class="num muted">${labsDone}/${labs.length}</span></div>
+          <p class="small muted">Ask a GP for a baseline in your first month, then repeat in 3–6 months to see what improved.</p>
+          <ul class="checks">${labs.map(([k, t, d]) => `<li><label class="check ${state.labs[k] ? "done" : ""}"><input type="checkbox" data-lab="${k}" id="lab-${k}" ${state.labs[k] ? "checked" : ""}><span><span class="t">${t}</span><br><span class="d">${d}</span></span></label></li>`).join("")}</ul>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>Sleep apnea check</h2><span class="num muted">${score}/8</span></div>
+          <p class="small muted">Sleep apnea is common in heavier men and makes weight loss harder: you wake up tired and hungry. This is the STOP-BANG screen doctors use.</p>
+          <ul class="checks">${sbItems.map(([k, t]) => `<li><label class="check"><input type="checkbox" data-sb="${k}" id="sb-${k}" ${sb[k] ? "checked" : ""}><span class="t" style="font-weight:400">${t}</span></label></li>`).join("")}</ul>
+          <p class="small muted">Counted from your details: BMI over 35 (${auto.bmi ? "yes" : "no"}), over 50 years old (${auto.age ? "yes" : "no"}), male (${auto.male ? "yes" : "no"}).</p>
+          <div class="note ${tone}"><strong>${score >= 5 ? "High risk: please see a doctor about a sleep study." : score >= 3 ? "Medium risk: mention this to your doctor." : "Low risk right now."}</strong></div>
+        </div>
+        <div class="panel">
+          <h2>See a doctor before you start if</h2>
+          <ul class="plain">
+            <li>You have had chest pain, heart problems or fainting.</li>
+            <li>You have diabetes, high blood pressure or kidney disease, especially if you take medicine for them (doses may need to drop as you lose weight).</li>
+            <li>You have a knee, hip or back injury that hurts during daily life.</li>
+            <li>You get very short of breath climbing one flight of stairs.</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <h2>The other half of health</h2>
+          <ul class="plain">
+            <li><b>Sleep 7–8 hours.</b> Short sleep raises appetite by hundreds of calories the next day.</li>
+            <li><b>Stress:</b> 5 minutes of slow breathing (in 4 s, out 6 s) or a walk beats stress-eating.</li>
+            <li><b>Smoking or vaping:</b> quitting is the single biggest health win there is.</li>
+            <li><b>Sitting:</b> stand up every hour. Long sitting is bad even if you exercise.</li>
+            <li><b>Mindset:</b> the scale goes up some days because of water and salt. Judge by the weekly trend, your waist and how your clothes fit.</li>
+          </ul>
+        </div>
+      </div>`;
+  }
+
+  let resetArmed = false;
+  function viewMe(c) {
+    const p = state.profile;
+    const ft = Math.floor(p.heightCm / 30.48), inch = Math.round((p.heightCm / 2.54) - ft * 12);
+    return `
+      <div class="grid2">
+        <div class="panel">
+          <h2>My details</h2>
+          <div class="row">
+            <div class="field"><label for="p-name">Name (optional)</label><input id="p-name" type="text" maxlength="40" value="${esc(p.name)}"></div>
+            <div class="field"><label for="p-age">Age</label><input id="p-age" type="number" min="14" max="90" value="${p.age}"></div>
+            <div class="field"><label for="p-sex">Sex</label><select id="p-sex"><option value="m" ${p.sex === "m" ? "selected" : ""}>Male</option><option value="f" ${p.sex === "f" ? "selected" : ""}>Female</option></select></div>
+          </div>
+          <div class="row">
+            <div class="field"><label for="p-ft">Height (feet)</label><input id="p-ft" type="number" min="3" max="8" value="${ft}"></div>
+            <div class="field"><label for="p-in">Inches</label><input id="p-in" type="number" min="0" max="11" value="${inch}"></div>
+            <div class="field"><label for="p-sw">Starting weight (kg)</label><input id="p-sw" type="number" step="0.1" value="${p.startWeight}"></div>
+          </div>
+          <div class="row">
+            <div class="field"><label for="p-act">Daily activity (not counting workouts)</label><select id="p-act">${actOptions(p.activity)}</select></div>
+          </div>
+          <div class="row">
+            <div class="field"><label for="p-wake">Wake-up time</label><input id="p-wake" type="time" value="${p.wake}"></div>
+            <div class="field"><label for="p-start">Plan start date</label><input id="p-start" type="date" value="${p.startDate}"></div>
+          </div>
+          <p class="small muted">Height ${r1(p.heightCm)} cm. Changes save as soon as you leave a field.</p>
+        </div>
+        <div class="panel">
+          <h2>How your numbers are worked out</h2>
+          <div class="tbl-wrap"><table><tbody>
+            <tr><td>Resting burn (Mifflin-St Jeor)</td><td class="n">${Math.round(c.bmr).toLocaleString()} kcal</td></tr>
+            <tr><td>× activity ${p.activity}</td><td class="n">${Math.round(c.tdee).toLocaleString()} kcal</td></tr>
+            <tr><td>− 500 for steady fat loss</td><td class="n">${c.target.toLocaleString()} kcal</td></tr>
+            <tr><td>Protein: 1.6 g × ${Math.round(Math.min(c.current, c.healthy + 5))} kg</td><td class="n">${c.protein} g</td></tr>
+            <tr><td>Water: 30 ml per kg, up to 3 L</td><td class="n">${c.glasses} glasses</td></tr>
+            <tr><td>Step goal for week ${c.week}</td><td class="n">${c.steps.toLocaleString()}</td></tr>
+          </tbody></table></div>
+        </div>
+        <div class="panel wide">
+          <h2>Backup</h2>
+          <p class="small muted">Your data is saved in this browser${remoteRef ? " and synced to your Claude account" : ""}. Copy a backup now and then, and paste it here to restore it on another device.</p>
+          <div class="row"><button class="btn" id="b-copy">Copy backup</button><span class="small muted" id="b-msg"></span></div>
+          <div class="field"><label for="b-text">Paste a backup to restore</label><textarea id="b-text" rows="3" placeholder='{"v":1,...}'></textarea></div>
+          <div class="row"><button class="btn" id="b-restore">Restore backup</button><button class="btn danger" id="b-reset">${resetArmed ? "Tap again to erase everything" : "Start over"}</button></div>
+        </div>
+      </div>`;
+  }
+
+  function viewWelcome() {
+    const p = state.profile, ws = weights();
+    const ft = Math.floor(p.heightCm / 30.48), inch = Math.round((p.heightCm / 2.54) - ft * 12);
+    const kg = ws.length ? ws[ws.length - 1].w : p.startWeight;
+    return `
+      <div class="panel hero">
+        <p class="label">Set up your plan</p>
+        <p class="hero-line">Tell me about you, and I'll work out your <em>calories, protein, workouts</em> and daily checklist.</p>
+        <div class="row">
+          <div class="field"><label for="w-name">Name (optional)</label><input id="w-name" type="text" maxlength="40" value="${esc(p.name)}"></div>
+          <div class="field"><label for="w-age">Age</label><input id="w-age" type="number" min="14" max="90" inputmode="numeric" value="${p.age}"></div>
+          <div class="field"><label for="w-sex">Sex</label><select id="w-sex"><option value="m" ${p.sex === "m" ? "selected" : ""}>Male</option><option value="f" ${p.sex === "f" ? "selected" : ""}>Female</option></select></div>
+        </div>
+        <div class="row">
+          <div class="field"><label for="w-ft">Height (feet)</label><input id="w-ft" type="number" min="3" max="8" inputmode="numeric" value="${ft}"></div>
+          <div class="field"><label for="w-in">Inches</label><input id="w-in" type="number" min="0" max="11" inputmode="numeric" value="${inch}"></div>
+          <div class="field"><label for="w-kg">Weight today (kg)</label><input id="w-kg" type="number" step="0.1" min="30" max="300" inputmode="decimal" value="${kg}"></div>
+        </div>
+        <div class="row">
+          <div class="field"><label for="w-act">Daily activity (not counting workouts)</label><select id="w-act">${actOptions(p.activity)}</select></div>
+          <div class="field"><label for="w-wake">Wake-up time</label><input id="w-wake" type="time" value="${p.wake}"></div>
+        </div>
+        <div class="row"><button class="btn primary" id="w-start">Start my plan</button></div>
+        <p class="small muted" id="w-msg">Your details stay private to you. You can change them later in My details.</p>
+      </div>`;
+  }
+
+  // ---------- render ----------
+  const app = document.getElementById("app");
+  function render() {
+    const c = calc();
+    const ready = state.profile.confirmed;
+    document.getElementById("tabs").hidden = !ready;
+    document.getElementById("daychip").textContent = ready ? `Day ${c.dayNo} · ${r1(c.current)} kg` : "";
+    if (!ready) { app.innerHTML = `<section class="view">${viewWelcome()}</section>`; return; }
+    document.querySelectorAll("#tabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === tab)));
+    const v = { today: viewToday, train: viewTrain, food: viewFood, progress: viewProgress, health: viewHealth, me: viewMe }[tab] || viewToday;
+    app.innerHTML = `<section class="view" role="tabpanel" aria-labelledby="tab-${tab}">${v(c)}</section>`;
+  }
+
+  // ---------- events ----------
+  document.getElementById("tabs").addEventListener("click", e => {
+    const b = e.target.closest("button[data-tab]"); if (!b) return;
+    tab = b.dataset.tab; resetArmed = false;
+    try { localStorage.setItem(LS_KEY + ":tab", tab); } catch (err) {}
+    render(); window.scrollTo({ top: 0 });
+  });
+  const num = v => { const n = parseFloat(v); return Number.isFinite(n) ? n : null; };
+
+  app.addEventListener("change", e => {
+    const t = e.target, d = day(today()), p = state.profile;
+    if (t.dataset.habit) { d.h = d.h || {}; d.h[t.dataset.habit] = t.checked; return save(); }
+    if (t.dataset.lab) { state.labs[t.dataset.lab] = t.checked; return save(); }
+    if (t.dataset.sb) { state.sleep = state.sleep || {}; state.sleep[t.dataset.sb] = t.checked; return save(); }
+    switch (t.id) {
+      case "in-steps": { const n = num(t.value); if (n === null) delete d.steps; else d.steps = Math.max(0, Math.round(n)); if (n !== null && n >= calc().steps) { d.h = d.h || {}; d.h.steps = true; } return save(); }
+      case "in-weight": { const n = num(t.value); if (n === null) delete d.weight; else if (n >= 30 && n <= 300) d.weight = r1(n); return save(); }
+      case "in-waist": { const n = num(t.value); if (n === null) delete d.waist; else d.waist = r1(n); return save(); }
+      case "p-name": p.name = t.value.trim(); return save();
+      case "p-age": { const n = num(t.value); if (n && n >= 14 && n <= 90) { p.age = Math.round(n); p.confirmed = true; } return save(); }
+      case "p-sex": p.sex = t.value; return save();
+      case "p-ft": case "p-in": {
+        const ft = num(document.getElementById("p-ft").value) || 0, inch = num(document.getElementById("p-in").value) || 0;
+        const cm = (ft * 12 + inch) * 2.54; if (cm > 120 && cm < 230) p.heightCm = r1(cm); return save();
+      }
+      case "p-sw": { const n = num(t.value); if (n && n >= 30 && n <= 300) p.startWeight = r1(n); return save(); }
+      case "p-act": p.activity = Number(t.value); return save();
+      case "p-wake": if (t.value) p.wake = t.value; return save();
+      case "p-start": if (t.value) p.startDate = t.value; return save();
+    }
+  });
+
+  app.addEventListener("click", e => {
+    const t = e.target.closest("button"); if (!t) return;
+    const d = day(today()), p = state.profile;
+    if (t.dataset.water) {
+      const n = Number(t.dataset.water); d.water = d.water === n ? n - 1 : n;
+      if (d.water >= calc().glasses) { d.h = d.h || {}; d.h.water = true; }
+      return save();
+    }
+    if (t.dataset.delw) { delete state.days[t.dataset.delw].weight; return save(); }
+    if (t.dataset.done) { d.h = d.h || {}; d.h[t.dataset.done] = true; return save(); }
+    switch (t.id) {
+      case "r-toggle": {
+        const on = !(state.reminders && state.reminders.on);
+        state.reminders = { on };
+        if (on) {
+          unlockAudio(); chime();
+          try { if ("Notification" in window && Notification.permission === "default") Notification.requestPermission().catch(() => {}); } catch (err) {}
+        }
+        return save();
+      }
+      case "r-cal": {
+        const msg = document.getElementById("r-msg");
+        if (window.claude && typeof window.claude.use === "function") {
+          msg.textContent = "Calendar files can't be saved from inside Claude. Open the app at fmsami.github.io/health-coach and press this button there.";
+          return;
+        }
+        try {
+          const url = URL.createObjectURL(new Blob([buildICS()], { type: "text/calendar" }));
+          const a = document.createElement("a"); a.href = url; a.download = "body-reset-reminders.ics";
+          document.body.appendChild(a); a.click(); a.remove();
+          setTimeout(() => URL.revokeObjectURL(url), 5000);
+          msg.textContent = /iPhone|iPad/.test(navigator.userAgent)
+            ? "If your calendar didn't open, go to Files → Downloads and tap body-reset-reminders.ics, then Add All."
+            : "Saved body-reset-reminders.ics. Open it to add the daily reminders to your calendar. For Google Calendar: calendar.google.com → Settings → Import.";
+        } catch (err) { msg.textContent = "This browser couldn't save the file. Try Chrome or Edge."; }
+        return;
+      }
+      case "w-start": {
+        const val = id => document.getElementById(id).value;
+        const age = num(val("w-age")), kg = num(val("w-kg"));
+        const cm = ((num(val("w-ft")) || 0) * 12 + (num(val("w-in")) || 0)) * 2.54;
+        const msg = document.getElementById("w-msg");
+        if (!age || age < 14 || age > 90) { msg.textContent = "Enter an age between 14 and 90."; return; }
+        if (cm < 120 || cm > 230) { msg.textContent = "Enter your height in feet and inches, for example 5 and 9."; return; }
+        if (!kg || kg < 30 || kg > 300) { msg.textContent = "Enter your weight in kg, for example 85."; return; }
+        Object.assign(p, { name: val("w-name").trim(), age: Math.round(age), sex: val("w-sex"), heightCm: r1(cm), startWeight: r1(kg), activity: Number(val("w-act")), wake: val("w-wake") || "07:00", confirmed: true });
+        if (!weights().length) { p.startDate = today(); day(today()).weight = r1(kg); }
+        tab = "today";
+        return save();
+      }
+      case "add-btn": {
+        const k = document.getElementById("add-date").value, w = num(document.getElementById("add-w").value);
+        if (k && w && w >= 30 && w <= 300) { day(k).weight = r1(w); if (k < p.startDate) p.startDate = k; save(); }
+        return;
+      }
+      case "b-copy": {
+        const msg = document.getElementById("b-msg"), txt = JSON.stringify(state);
+        const fallback = () => { const ta = document.getElementById("b-text"); ta.value = txt; ta.select(); msg.textContent = "Selected in the box below. Copy it with Ctrl+C or long-press."; };
+        try { navigator.clipboard.writeText(txt).then(() => { msg.textContent = "Backup copied. Paste it into a note or message to yourself."; }, fallback); } catch (err) { fallback(); }
+        return;
+      }
+      case "b-restore": {
+        try {
+          const s = JSON.parse(document.getElementById("b-text").value);
+          if (!s || !s.profile || !s.days) throw new Error();
+          state = s; save(); document.getElementById("b-msg") && (document.getElementById("b-msg").textContent = "Backup restored.");
+        } catch (err) { const m = document.getElementById("b-msg"); if (m) m.textContent = "That doesn't look like a backup from this app. Copy the whole text and try again."; }
+        return;
+      }
+      case "b-reset": {
+        if (!resetArmed) { resetArmed = true; return render(); }
+        resetArmed = false; state = defaultState(); state.updatedAt = 1; tab = "today"; return save();
+      }
+    }
+  });
+
+  // ---------- reminders while the app is open ----------
+  const toast = document.getElementById("toast");
+  const baseTitle = document.title;
+  const snoozed = {};
+  let audio = null, lastRel = null;
+  function unlockAudio() {
+    try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); if (audio.state === "suspended") audio.resume(); } catch (e) {}
+  }
+  function chime() {
+    if (!audio) return;
+    try {
+      const t0 = audio.currentTime;
+      [660, 880, 990].forEach((f, i) => {
+        const o = audio.createOscillator(), g = audio.createGain(), at = t0 + i * 0.18;
+        o.frequency.value = f;
+        g.gain.setValueAtTime(0.0001, at);
+        g.gain.exponentialRampToValueAtTime(0.25, at + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, at + 0.3);
+        o.connect(g).connect(audio.destination); o.start(at); o.stop(at + 0.32);
+      });
+    } catch (e) {}
+  }
+  function remind(it) {
+    toast.innerHTML = `<div class="toast-card" role="alert">
+      <p class="label">Reminder · ${fmt12(it.time)}</p>
+      <p class="toast-t">${esc(it.t)}</p>
+      <p class="small muted">${esc(it.d)}</p>
+      <div class="row"><button class="btn primary" data-tdone="${it.id}">Done, tick it</button><button class="btn" data-snooze="${it.id}">Remind me in 15 min</button><button class="btn" data-close="1">Dismiss</button></div>
+    </div>`;
+    toast.hidden = false;
+    document.title = "(!) " + baseTitle;
+    chime();
+    try { if ("Notification" in window && Notification.permission === "granted") new Notification("Body Reset Coach", { body: it.t }); } catch (e) {}
+  }
+  function hideToast() { toast.hidden = true; toast.innerHTML = ""; document.title = baseTitle; }
+  toast.addEventListener("click", e => {
+    const b = e.target.closest("button"); if (!b) return;
+    if (b.dataset.tdone) { const d = day(today()); d.h = d.h || {}; d.h[b.dataset.tdone] = true; hideToast(); return save(); }
+    if (b.dataset.snooze) snoozed[b.dataset.snooze] = Date.now() + 15 * 60 * 1000;
+    hideToast();
+  });
+  // browsers only play sound after a tap, so unlock it on the first one
+  document.addEventListener("pointerdown", () => { if (state.reminders && state.reminders.on) unlockAudio(); });
+
+  function tick() {
+    const rel = relNow();
+    if (state.reminders && state.reminders.on && lastRel !== null && rel !== lastRel) {
+      const d = day(today()), H = checklist(calc());
+      const crossed = at => lastRel < rel ? (at > lastRel && at <= rel) : (at > lastRel || at <= rel);
+      const due = H.filter(it => !(d.h && d.h[it.id]) && crossed(it.at));
+      Object.keys(snoozed).forEach(id => {
+        if (Date.now() < snoozed[id]) return;
+        delete snoozed[id];
+        const it = H.find(x => x.id === id);
+        if (it && !(d.h && d.h[id]) && !due.includes(it)) due.push(it);
+      });
+      if (due.length) remind(due[due.length - 1]);
+    }
+    const changed = rel !== lastRel;
+    lastRel = rel;
+    if (changed && tab === "today" && !app.contains(document.activeElement)) render();
+  }
+
+  render();
+  initSync();
+  tick();
+  setInterval(tick, 20 * 1000);
+  // offline support when installed from the website (not inside Claude)
+  if ("serviceWorker" in navigator && /(^|\.)github\.io$|^localhost$|^127\.0\.0\.1$/.test(location.hostname)) {
+    navigator.serviceWorker.register("sw.js").catch(() => {});
+  }
+})();
+</script>
