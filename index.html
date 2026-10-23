@@ -13,7 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=Spline+Sans+Mono:wght@400;600&display=swap">
 <style>
-/* Layout: sticky coach header with tabs, one column of working panels that splits in two on wide screens */
+/* Layout: sticky coach header, tab bar on top (bottom on phones), one column of working panels that splits in two on wide screens */
 :root {
   --bg: #eef3ef;
   --surface: #ffffff;
@@ -28,6 +28,7 @@
   --warm-soft: #f6e8d2;
   --danger: #b3261e;
   --danger-soft: #f8dcd9;
+  --scrim: rgb(8 16 12 / .55);
   --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
   --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
   --font-num: "Spline Sans Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
@@ -37,13 +38,13 @@
   :root:not([data-theme="light"]) {
     --bg: #0d1411; --surface: #151f1a; --sunk: #1b2721; --ink: #e5eee8; --muted: #91a398; --line: #26352d;
     --accent: #47c18b; --accent-ink: #06140d; --accent-soft: #173828; --warm: #e5a548; --warm-soft: #3a2a12;
-    --danger: #f2776d; --danger-soft: #3d1a17; color-scheme: dark;
+    --danger: #f2776d; --danger-soft: #3d1a17; --scrim: rgb(0 0 0 / .65); color-scheme: dark;
   }
 }
 :root[data-theme="dark"] {
   --bg: #0d1411; --surface: #151f1a; --sunk: #1b2721; --ink: #e5eee8; --muted: #91a398; --line: #26352d;
   --accent: #47c18b; --accent-ink: #06140d; --accent-soft: #173828; --warm: #e5a548; --warm-soft: #3a2a12;
-  --danger: #f2776d; --danger-soft: #3d1a17; color-scheme: dark;
+  --danger: #f2776d; --danger-soft: #3d1a17; --scrim: rgb(0 0 0 / .65); color-scheme: dark;
 }
 /* keeps content clear of the iPhone notch and home bar when installed */
 :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
@@ -52,7 +53,7 @@
 body {
   background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 16px; line-height: 1.5;
   padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 0 48px;
+  padding-block: 0 48px; -webkit-tap-highlight-color: transparent;
 }
 body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--bg); }
 h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; line-height: 1.15; }
@@ -64,9 +65,10 @@ p { margin: 0; }
 .small { font-size: .875rem; }
 .label { font-size: .75rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); font-weight: 700; }
 button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
 :focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 6px; }
 
-/* Header */
+/* Header + tabs */
 header.top {
   position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--bg);
   margin: 0 auto; max-width: 1040px; padding-block: 14px 0; border-bottom: 1px solid var(--line);
@@ -78,110 +80,155 @@ header.top {
 nav.tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; margin-top: 10px; }
 nav.tabs::-webkit-scrollbar { display: none; }
 nav.tabs button {
-  border: 0; background: none; padding: 10px 12px; border-bottom: 3px solid transparent; cursor: pointer;
-  font-weight: 700; color: var(--muted); white-space: nowrap;
+  border: 0; background: none; padding: 10px 12px; border-bottom: 3px solid transparent;
+  font-weight: 700; color: var(--muted); white-space: nowrap; display: flex; align-items: center; gap: 6px;
 }
-nav.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+nav.tabs svg { width: 20px; height: 20px; flex: none; }
+nav.tabs button[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+@media (max-width: 700px) {
+  header.top { padding-bottom: 10px; }
+  nav.tabs {
+    position: fixed; left: 0; right: 0; bottom: 0; margin: 0; z-index: 6; gap: 0; justify-content: space-around;
+    background: var(--surface); border-top: 1px solid var(--line);
+    padding: 4px max(4px, env(safe-area-inset-right, 0px)) calc(4px + env(safe-area-inset-bottom, 0px)) max(4px, env(safe-area-inset-left, 0px));
+  }
+  nav.tabs button { flex: 1 1 0; flex-direction: column; gap: 2px; padding: 6px 0; font-size: .7rem; border-bottom: 0; border-top: 3px solid transparent; min-width: 0; }
+  nav.tabs button[aria-selected="true"] { border-top-color: var(--accent); }
+  nav.tabs svg { width: 22px; height: 22px; }
+  body { padding-bottom: 96px; }
+  #toast { bottom: calc(62px + env(safe-area-inset-bottom, 0px)) !important; }
+}
 
 main { max-width: 1040px; margin: 0 auto; padding-top: 20px; display: grid; gap: 20px; }
 section.view { display: grid; gap: 20px; }
 .grid2 { display: grid; gap: 20px; grid-template-columns: 1fr; }
 @media (min-width: 820px) { .grid2 { grid-template-columns: 1fr 1fr; align-items: start; } .grid2 > .wide { grid-column: 1 / -1; } }
-.grid2 > * { min-width: 0; }
+.grid2 > *, .stack > * { min-width: 0; }
+.stack { display: grid; gap: 20px; min-width: 0; }
 .panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; display: grid; gap: 14px; min-width: 0; }
 .panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; }
 
+/* Segmented control for sections inside a tab */
+.seg { display: flex; gap: 4px; background: var(--sunk); border-radius: 12px; padding: 4px; overflow-x: auto; scrollbar-width: none; }
+.seg button { flex: 1 1 auto; min-width: 0; border: 0; background: none; border-radius: 9px; padding: 8px 6px; font-size: .88rem; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: 0 1px 3px rgb(0 0 0 / .12); }
+
 /* Hero numbers */
 .hero { display: grid; gap: 14px; }
-.hero-line { font-family: var(--font-display); font-size: clamp(1.5rem, 4vw, 2.2rem); font-weight: 700; line-height: 1.15; max-width: 30ch; }
+.hero-line { font-family: var(--font-display); font-size: clamp(1.45rem, 4vw, 2.2rem); font-weight: 700; line-height: 1.15; max-width: 30ch; }
 .hero-line em { font-style: normal; color: var(--accent); }
 .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
-.stat { background: var(--sunk); border-radius: 12px; padding: 12px 14px; display: grid; gap: 2px; }
+.stat { background: var(--sunk); border-radius: 12px; padding: 12px 14px; display: grid; gap: 2px; align-content: start; }
 .stat b { font-family: var(--font-num); font-size: 1.35rem; font-weight: 600; font-variant-numeric: tabular-nums; }
 .stat .sub { font-size: .8rem; color: var(--muted); }
 
-/* Notices */
+/* Notices and chips */
 .note { border-radius: 12px; padding: 12px 14px; background: var(--warm-soft); display: grid; gap: 8px; }
 .note.ok { background: var(--accent-soft); }
 .note.bad { background: var(--danger-soft); }
 .note strong { font-family: var(--font-display); }
+.chip { display: inline-block; font-size: .75rem; font-weight: 700; padding: 2px 8px; border-radius: 99px; white-space: nowrap; }
+.chip.ok { background: var(--accent-soft); color: var(--accent); }
+.chip.warn { background: var(--warm-soft); color: var(--warm); }
+.chip.bad { background: var(--danger-soft); color: var(--danger); }
+.pill { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 2px 8px; border-radius: 99px; background: var(--accent); color: var(--accent-ink); }
+.pill.warm { background: var(--warm); color: var(--surface); }
 
 /* Checklist */
 .checks { display: grid; gap: 6px; list-style: none; margin: 0; padding: 0; }
 .check { display: grid; grid-template-columns: 28px 1fr; gap: 10px; align-items: start; padding: 10px; border-radius: 10px; cursor: pointer; }
 .check:hover { background: var(--sunk); }
-.check input { appearance: none; width: 24px; height: 24px; border: 2px solid var(--line); border-radius: 7px; margin: 0; display: grid; place-content: center; cursor: pointer; background: var(--surface); }
+.check input { appearance: none; -webkit-appearance: none; width: 24px; height: 24px; border: 2px solid var(--line); border-radius: 7px; margin: 0; display: grid; place-content: center; cursor: pointer; background: var(--surface); }
 .check input:checked { background: var(--accent); border-color: var(--accent); }
 .check input:checked::after { content: ""; width: 6px; height: 11px; border: solid var(--accent-ink); border-width: 0 3px 3px 0; transform: translateY(-1px) rotate(45deg); }
 .check .t { font-weight: 700; }
 .check .d { font-size: .85rem; color: var(--muted); }
 .check.done .t { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--accent); }
-
-/* Meter */
-.meter { height: 10px; background: var(--sunk); border-radius: 99px; overflow: hidden; }
-.meter i { display: block; height: 100%; background: var(--accent); border-radius: 99px; transition: width .3s; }
-.meter.warm i { background: var(--warm); }
-
-/* Water */
-.glasses { display: flex; flex-wrap: wrap; gap: 6px; }
-.glass { width: 30px; height: 38px; border: 2px solid var(--line); border-radius: 4px 4px 9px 9px; background: var(--surface); cursor: pointer; position: relative; overflow: hidden; padding: 0; }
-.glass.full { border-color: var(--accent); }
-.glass.full::after { content: ""; position: absolute; inset: 30% 0 0; background: var(--accent); opacity: .75; }
-
-/* Inputs */
-.field { display: grid; gap: 4px; min-width: 0; }
-.field label { font-size: .85rem; font-weight: 700; color: var(--muted); }
-.field input, .field select, textarea {
-  width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg);
-}
-.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
-.row > .field { flex: 1 1 120px; }
-.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 10px 14px; font-weight: 700; cursor: pointer; }
-.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
-.btn.danger { color: var(--danger); border-color: var(--danger); }
-.btn:disabled { opacity: .5; cursor: default; }
-.btn.small { padding: 6px 10px; font-size: .85rem; }
-
-/* Timed checklist + reminders */
 .tm { font-family: var(--font-num); font-size: .8rem; font-weight: 600; color: var(--accent); }
 .ti.now .check { background: var(--accent-soft); }
 .ti.late .tm { color: var(--warm); }
 .ti.done .tm { color: var(--muted); }
 .remind { border: 2px solid var(--accent); }
 .remind h2 { font-size: 1.3rem; }
-#toast { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; pointer-events: none;
-  padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
-.toast-card { pointer-events: auto; max-width: 560px; margin: 0 auto; background: var(--surface); border: 2px solid var(--accent); border-radius: var(--r);
-  padding: 16px; display: grid; gap: 8px; box-shadow: 0 12px 40px rgb(0 0 0 / .28); }
-.toast-t { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; }
+
+/* Meter */
+.meter { height: 10px; background: var(--sunk); border-radius: 99px; overflow: hidden; }
+.meter i { display: block; height: 100%; background: var(--accent); border-radius: 99px; transition: width .3s; }
+.meter.warm i { background: var(--warm); }
+.meter.bad i { background: var(--danger); }
+
+/* Water */
+.glasses { display: flex; flex-wrap: wrap; gap: 6px; }
+.glass { width: 30px; height: 38px; border: 2px solid var(--line); border-radius: 4px 4px 9px 9px; background: var(--surface); position: relative; overflow: hidden; padding: 0; }
+.glass.full { border-color: var(--accent); }
+.glass.full::after { content: ""; position: absolute; inset: 30% 0 0; background: var(--accent); opacity: .75; }
+
+/* Scale buttons (mood, energy) */
+.scale { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.scale button { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 8px 2px; font-size: .78rem; font-weight: 700; color: var(--muted); }
+.scale button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+/* Inputs */
+.field { display: grid; gap: 4px; min-width: 0; }
+.field label { font-size: .85rem; font-weight: 700; color: var(--muted); }
+.field input, .field select, textarea {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); min-height: 44px;
+}
+.row { display: flex; gap: 10px; flex-wrap: wrap; align-items: end; }
+.row > .field { flex: 1 1 120px; }
+.btn { border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 10px 14px; font-weight: 700; min-height: 44px; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.danger { color: var(--danger); border-color: var(--danger); }
+.btn.small { padding: 6px 10px; font-size: .85rem; min-height: 34px; }
+.btn.wide { width: 100%; }
+.iconbtn { border: 1px solid var(--line); background: var(--surface); border-radius: 8px; width: 34px; height: 34px; font-weight: 700; display: inline-grid; place-content: center; padding: 0; }
 
 /* Week strip */
 .week { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
-.wd { border: 1px solid var(--line); border-radius: 10px; padding: 8px 4px; text-align: center; display: grid; gap: 2px; font-size: .78rem; }
-.wd b { font-family: var(--font-display); font-size: .9rem; }
+.wd { border: 1px solid var(--line); border-radius: 10px; padding: 8px 2px; text-align: center; display: grid; gap: 2px; font-size: .78rem; }
+.wd b { font-family: var(--font-display); font-size: .85rem; }
 .wd.today { border-color: var(--accent); background: var(--accent-soft); }
 
-/* Exercises */
+/* Exercises + guided workout */
 .ex-list { display: grid; gap: 10px; }
 .ex { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 6px; }
+.ex.complete { border-color: var(--accent); background: var(--accent-soft); }
 .ex-top { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; align-items: baseline; }
 .ex-top h3 { font-size: 1rem; }
 .dose { font-family: var(--font-num); font-size: .85rem; background: var(--sunk); border-radius: 6px; padding: 2px 8px; white-space: nowrap; }
 .ex .alt { font-size: .85rem; color: var(--muted); }
+.sets { display: flex; gap: 8px; flex-wrap: wrap; }
+.set { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--line); background: var(--surface); font-family: var(--font-num); font-weight: 600; }
+.set.done { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.restbar { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 64px); z-index: 4; display: flex; justify-content: space-between; align-items: center; gap: 10px; background: var(--accent); color: var(--accent-ink); border-radius: 12px; padding: 10px 14px; font-weight: 700; }
+.restbar .num { font-size: 1.3rem; }
+.restbar button { background: var(--accent-ink); color: var(--accent); border: 0; border-radius: 8px; padding: 6px 10px; font-weight: 700; }
 .phases { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
 .phase { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 4px; }
 .phase.on { border-color: var(--accent); background: var(--accent-soft); }
-.pill { display: inline-block; font-size: .72rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; padding: 2px 8px; border-radius: 99px; background: var(--accent); color: var(--accent-ink); }
-.pill.warm { background: var(--warm); }
-.pill.bad { background: var(--danger); color: var(--surface); }
 
-/* Plate */
+/* Food */
 .plate-wrap { display: grid; grid-template-columns: 170px 1fr; gap: 18px; align-items: center; }
 @media (max-width: 520px) { .plate-wrap { grid-template-columns: 1fr; justify-items: center; } }
 .plate-wrap svg { width: 170px; height: 170px; }
 .legend { display: grid; gap: 8px; }
 .legend div { display: grid; grid-template-columns: 14px 1fr; gap: 10px; align-items: start; }
 .legend i { width: 14px; height: 14px; border-radius: 4px; margin-top: 4px; }
+.results { display: grid; gap: 4px; max-height: 320px; overflow-y: auto; }
+.result { display: grid; grid-template-columns: 1fr auto; gap: 8px; align-items: center; text-align: left; border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 8px 10px; }
+.result:hover { border-color: var(--accent); }
+.result .k { font-family: var(--font-num); font-size: .8rem; color: var(--muted); white-space: nowrap; }
+.entries { list-style: none; margin: 0; padding: 0; display: grid; }
+.entry { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; padding: 10px 0; border-top: 1px solid var(--line); align-items: center; }
+.entry:first-child { border-top: 0; }
+.entry .qty { display: flex; gap: 6px; align-items: center; }
+.entry .qty .num { min-width: 2.2em; text-align: center; }
+.mealhead { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-top: 6px; }
+details.recipe { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; }
+details.recipe summary { cursor: pointer; display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; font-weight: 700; list-style: none; }
+details.recipe summary::-webkit-details-marker { display: none; }
+details.recipe[open] summary { margin-bottom: 8px; }
+details.recipe ol, details.recipe ul { margin: 6px 0 0; padding-left: 1.2em; display: grid; gap: 4px; }
 
 /* Tables */
 .tbl-wrap { overflow-x: auto; }
@@ -190,13 +237,7 @@ th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--line
 th { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
 td.n { font-family: var(--font-num); font-variant-numeric: tabular-nums; white-space: nowrap; }
 
-/* Meals */
-.meals { display: grid; gap: 10px; }
-.meal { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 12px 0; border-top: 1px solid var(--line); }
-.meal:first-child { border-top: 0; }
-.meal .k { grid-column: 2; grid-row: 1; font-family: var(--font-num); color: var(--muted); font-size: .85rem; }
-
-/* Chart */
+/* Progress */
 .chart svg { width: 100%; height: auto; display: block; }
 .chart text { fill: var(--muted); font-family: var(--font-num); font-size: 11px; }
 .heat { display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 4px; }
@@ -209,11 +250,40 @@ td.n { font-family: var(--font-num); font-variant-numeric: tabular-nums; white-s
 .miles li { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: center; }
 .miles .dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--line); }
 .miles li.hit .dot { background: var(--accent); border-color: var(--accent); }
+.badges { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+.badge { border: 1px solid var(--line); border-radius: 12px; padding: 12px; display: grid; gap: 6px; justify-items: start; }
+.badge .medal { width: 40px; height: 40px; border-radius: 50%; display: grid; place-content: center; background: var(--accent); color: var(--accent-ink); font-family: var(--font-display); font-weight: 800; font-size: 1rem; }
+.badge.locked { background: var(--sunk); border-color: transparent; }
+.badge.locked .medal { background: var(--line); color: var(--muted); }
+.badge b { font-family: var(--font-display); font-size: .95rem; line-height: 1.2; }
+.badge span { font-size: .78rem; color: var(--muted); }
+.report { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
 
-ul.plain { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
+/* Readings */
+.readings { list-style: none; margin: 0; padding: 0; display: grid; }
+.readings li { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; padding: 10px 0; border-top: 1px solid var(--line); align-items: center; }
+.readings li:first-child { border-top: 0; }
+
+/* Overlay: toast and modal */
+#toast { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; pointer-events: none;
+  padding: 12px max(16px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.toast-card { pointer-events: auto; max-width: 560px; margin: 0 auto; background: var(--surface); border: 2px solid var(--accent); border-radius: var(--r);
+  padding: 16px; display: grid; gap: 8px; box-shadow: 0 12px 40px rgb(0 0 0 / .28); }
+.toast-t { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; }
+#modal { position: fixed; inset: 0; z-index: 30; background: var(--scrim); display: grid; align-items: end; justify-items: center; overflow-y: auto;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) max(12px, env(safe-area-inset-right, 0px)) calc(12px + env(safe-area-inset-bottom, 0px)) max(12px, env(safe-area-inset-left, 0px)); }
+@media (min-width: 701px) { #modal { align-items: center; } }
+.sheet { width: 100%; max-width: 520px; background: var(--surface); border-radius: 20px; padding: 20px; display: grid; gap: 14px; }
+.sheet-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.bigtime { font-family: var(--font-num); font-size: 3rem; font-weight: 600; text-align: center; font-variant-numeric: tabular-nums; }
+.breath { width: 160px; height: 160px; margin: 8px auto; border-radius: 50%; background: radial-gradient(circle, var(--accent-soft), var(--accent)); transform: scale(.6); animation: breathe 10s ease-in-out infinite; }
+@keyframes breathe { 0% { transform: scale(.6); } 40% { transform: scale(1); } 100% { transform: scale(.6); } }
+.breath-cue { text-align: center; font-family: var(--font-display); font-size: 1.3rem; font-weight: 700; }
+
+ul.plain, ol.plain { margin: 0; padding-left: 1.2em; display: grid; gap: 6px; }
 .sync { font-size: .78rem; color: var(--muted); }
 footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--muted); }
-@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } .breath { animation: none; transform: scale(.85); } }
 </style>
 
 <header class="top">
@@ -222,17 +292,18 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
     <span class="daychip" id="daychip"></span>
   </div>
   <nav class="tabs" role="tablist" id="tabs">
-    <button role="tab" data-tab="today" id="tab-today">Today</button>
-    <button role="tab" data-tab="train" id="tab-train">Workouts</button>
-    <button role="tab" data-tab="food" id="tab-food">Food</button>
-    <button role="tab" data-tab="progress" id="tab-progress">Progress</button>
-    <button role="tab" data-tab="health" id="tab-health">Doctor's list</button>
-    <button role="tab" data-tab="me" id="tab-me">My details</button>
+    <button role="tab" data-tab="today" id="tab-today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg>Today</button>
+    <button role="tab" data-tab="train" id="tab-train"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"/></svg>Train</button>
+    <button role="tab" data-tab="food" id="tab-food"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11h16a8 8 0 0 1-16 0z"/><path d="M9 7c0-1 1-1.5 1-3M14 7c0-1 1-1.5 1-3"/></svg>Food</button>
+    <button role="tab" data-tab="progress" id="tab-progress"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19h16M6 15l4-4 3 3 5-6"/></svg>Progress</button>
+    <button role="tab" data-tab="health" id="tab-health"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10z"/></svg>Health</button>
+    <button role="tab" data-tab="me" id="tab-me"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg>Me</button>
   </nav>
 </header>
 
 <main id="app"></main>
 <div id="toast" hidden></div>
+<div id="modal" hidden></div>
 
 <footer>
   <p>General health and fitness guidance, not a medical diagnosis. Check with your doctor before starting if you have heart, blood pressure, sugar or joint problems. <span class="sync" id="sync">Saved on this device.</span></p>
@@ -242,37 +313,66 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
 (() => {
   "use strict";
 
-  // ---------- dates ----------
+  // ---------- dates and formatting ----------
   const pad = n => String(n).padStart(2, "0");
   const keyOf = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
   const parseKey = k => { const [y, m, d] = k.split("-").map(Number); return new Date(y, m - 1, d); };
   const addDays = (k, n) => { const d = parseKey(k); d.setDate(d.getDate() + n); return keyOf(d); };
   const diffDays = (a, b) => Math.round((parseKey(b) - parseKey(a)) / 864e5);
   const today = () => keyOf(new Date());
+  const nowHM = () => { const n = new Date(); return `${pad(n.getHours())}:${pad(n.getMinutes())}`; };
   const fmtDate = k => parseKey(k).toLocaleDateString(undefined, { day: "numeric", month: "short" });
   const fmtDateLong = k => parseKey(k).toLocaleDateString(undefined, { weekday: "long", day: "numeric", month: "long" });
   const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
   const r1 = n => Math.round(n * 10) / 10;
+  const kc = n => Math.round(n).toLocaleString();
+  const avg = a => a.length ? a.reduce((s, x) => s + x, 0) / a.length : null;
+  const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+  const num = v => { const n = parseFloat(v); return Number.isFinite(n) ? n : null; };
+  function fmt12(hhmm) {
+    let [h, m] = hhmm.split(":").map(Number);
+    const ap = h >= 12 ? "pm" : "am"; h = h % 12 || 12;
+    return `${h}:${pad(m)} ${ap}`;
+  }
+  function shift(hhmm, mins) {
+    const [h, m] = hhmm.split(":").map(Number);
+    let t = (h * 60 + m + mins) % 1440; if (t < 0) t += 1440;
+    return `${pad(Math.floor(t / 60))}:${pad(t % 60)}`;
+  }
+  function inMinutes(n) {
+    const h = Math.floor(n / 60), m = n % 60;
+    return h ? `${h} h${m ? " " + m + " min" : ""}` : `${m} min`;
+  }
 
   // ---------- state ----------
   const LS_KEY = "body-reset-coach-v1";
+  const GROCERY = ["Eggs (2 dozen)", "Chicken breast or curry cut", "Fish: rui, tilapia or pangas", "Masoor dal", "Chana (chickpeas)", "Plain doi (yogurt)", "Milk", "Oats", "Atta for roti", "Brown or parboiled rice", "Lau, begun, cauliflower, cabbage", "Shak (spinach, lal shak)", "Cucumber, tomato, onion, lemon", "Guava, apple, banana, orange", "Roasted chana or peanuts", "Green tea"];
   function defaultState() {
-    const t = today();
     return {
-      v: 1, updatedAt: 0,
-      profile: { name: "", age: 30, sex: "m", heightCm: 175.3, startWeight: 90, activity: 1.2, wake: "07:00", startDate: t, confirmed: false },
-      days: {},
-      labs: {}, sleep: {}
+      v: 2, updatedAt: 0,
+      profile: { name: "", age: 30, sex: "m", heightCm: 175.3, startWeight: 90, activity: 1.2, wake: "07:00", startDate: today(), confirmed: false },
+      days: {}, labs: {}, sleep: {}, reminders: { on: false },
+      workouts: [], readings: [], custom: [], myFoods: [], session: null,
+      grocery: GROCERY.map((t, i) => ({ id: "g" + i, t, done: false }))
     };
+  }
+  // fills in anything an older save is missing
+  function ensure(s) {
+    const d = defaultState();
+    Object.keys(d).forEach(k => { if (s[k] === undefined || s[k] === null && k !== "session") s[k] = d[k]; });
+    s.v = 2;
+    return s;
   }
   function loadLocal() {
     try { const raw = localStorage.getItem(LS_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
     return null;
   }
-  let state = loadLocal() || defaultState();
+  let state = ensure(loadLocal() || defaultState());
   let tab = "today";
   try { tab = localStorage.getItem(LS_KEY + ":tab") || "today"; } catch (e) {}
   if (location.hash && document.getElementById("tab-" + location.hash.slice(1))) tab = location.hash.slice(1);
+  const sub = { train: "today", food: "log", health: "readings", me: "details" };
+  let foodQuery = "", foodMeal = defaultMeal(), readType = "bp", resetArmed = false;
 
   function save() {
     state.updatedAt = Date.now();
@@ -305,7 +405,7 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
       const snap = await remoteRef.get();
       const remote = snap.exists ? snap.data() : null;
       if (remote && remote.json && (remote.updatedAt || 0) > (state.updatedAt || 0)) {
-        state = JSON.parse(remote.json);
+        state = ensure(JSON.parse(remote.json));
         try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
         render();
         syncEl.textContent = "Synced to your account.";
@@ -342,9 +442,9 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
     return { current, bmi, bmr, tdee, target, healthy, protein, glasses, dayNo, week, phase, steps, h, ws };
   }
   function bmiClass(b) {
-    if (b < 18.5) return ["Underweight", "warm"];
+    if (b < 18.5) return ["Underweight", "warn"];
     if (b < 25) return ["Healthy range", "ok"];
-    if (b < 30) return ["Overweight", "warm"];
+    if (b < 30) return ["Overweight", "warn"];
     if (b < 35) return ["Obesity, class I", "bad"];
     if (b < 40) return ["Obesity, class II", "bad"];
     return ["Obesity, class III", "bad"];
@@ -352,9 +452,9 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
 
   // ---------- training plan ----------
   const PHASES = [
-    { n: 1, weeks: "Weeks 1–4", name: "Build the habit", sets: "2 sets", reps: "8–10 reps", walk: "20–30 min easy walk", walkTip: "Easy pace: you can hold a full conversation.", effort: "Finish feeling you could do 4 more reps. Talking while walking should be easy." },
-    { n: 2, weeks: "Weeks 5–8", name: "Get stronger", sets: "3 sets", reps: "10–12 reps", walk: "35–45 min brisk walk", walkTip: "Brisk pace: you can talk, but not sing.", effort: "Last 2 reps feel hard but clean. Brisk walk: you can talk, but not sing." },
-    { n: 3, weeks: "Weeks 9–12", name: "Turn it up", sets: "3 sets", reps: "8–12 reps, add load", walk: "45–60 min, with intervals", walkTip: "Intervals: 2 min fast, 1 min easy, repeat 6 times, then walk easy.", effort: "Add weight (backpack, bottles, dumbbells) when 12 reps feel easy. Intervals: 2 min fast, 1 min easy, ×6." }
+    { n: 1, weeks: "Weeks 1–4", name: "Build the habit", setsN: 2, sets: "2 sets", reps: "8–10 reps", rest: 90, walk: "20–30 min easy walk", walkTip: "Easy pace: you can hold a full conversation.", effort: "Finish feeling you could do 4 more reps. Talking while walking should be easy." },
+    { n: 2, weeks: "Weeks 5–8", name: "Get stronger", setsN: 3, sets: "3 sets", reps: "10–12 reps", rest: 75, walk: "35–45 min brisk walk", walkTip: "Brisk pace: you can talk, but not sing.", effort: "Last 2 reps feel hard but clean. Brisk walk: you can talk, but not sing." },
+    { n: 3, weeks: "Weeks 9–12", name: "Turn it up", setsN: 3, sets: "3 sets", reps: "8–12 reps, add load", rest: 75, walk: "45–60 min, with intervals", walkTip: "Intervals: 2 min fast, 1 min easy, repeat 6 times, then walk easy.", effort: "Add weight (backpack, bottles, dumbbells) when 12 reps feel easy. Intervals: 2 min fast, 1 min easy, ×6." }
   ];
   const EX = {
     A: [
@@ -374,6 +474,7 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
       { n: "Bird dog", d: "On hands and knees, reach opposite arm and leg out long, hold 3 seconds, switch sides. Keep your hips level.", easy: "Arm only or leg only.", hard: "Longer holds." }
     ]
   };
+  const STRETCHES = ["Calf stretch against a wall", "Hip flexor lunge stretch", "Hamstring stretch with your heel on a step", "Chest stretch in a doorway", "Child's pose", "Slow neck rolls"];
   // weekday 0=Sunday
   const WEEK = [
     { short: "Rest", title: "Rest day + stretching", kind: "rest", desc: "10 minutes of gentle stretching and an easy walk if you feel like it. Recovery is where the progress happens." },
@@ -384,41 +485,129 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
     { short: "Str A", title: "Strength A", kind: "A", desc: "Strength A. Try to beat Monday by one rep or a bit more weight." },
     { short: "Long", title: "Long walk", kind: "walk", desc: "Your longest walk of the week. Go with a friend, a podcast or music." }
   ];
+  const doseOf = (e, ph) => e.n.startsWith("Farmer") ? "2–3 × 30–40 steps" : e.n.startsWith("Side plank") ? ph.sets + " × 15–30 s / side" : (e.n.startsWith("Bird") || e.n.startsWith("Dead")) ? ph.sets + " × 6–8 / side" : ph.sets + " × " + ph.reps;
+
+  // ---------- food database (per portion) ----------
+  const FOODS = [
+    ["Rice, cooked", "1 cup (1 fist)", 205, 4], ["Brown rice, cooked", "1 cup", 215, 5], ["Atta roti, no ghee", "1 medium", 100, 3],
+    ["Paratha", "1 piece", 260, 5], ["Luchi or puri", "1 piece", 140, 2], ["Naan", "1 piece", 260, 9],
+    ["White bread", "1 slice", 75, 2.5], ["Brown bread", "1 slice", 70, 3.5], ["Oats with water", "½ cup dry", 150, 5],
+    ["Muri (puffed rice)", "1 cup", 55, 1], ["Chira (flattened rice), cooked", "1 cup", 180, 3], ["Khichuri", "1 plate", 450, 14],
+    ["Egg, boiled", "1 large", 78, 6], ["Omelette, 2 eggs", "1 omelette", 200, 12], ["Egg curry", "1 egg + gravy", 170, 7],
+    ["Chicken curry", "1 palm piece + gravy", 220, 22], ["Grilled chicken breast", "100 g", 165, 31], ["Fish curry (rui, katla)", "1 piece + gravy", 180, 18],
+    ["Hilsa (ilish), fried", "1 piece", 300, 18], ["Beef curry", "100 g", 280, 22], ["Mutton curry", "100 g", 300, 20],
+    ["Masoor dal", "1 bowl (200 ml)", 150, 9], ["Chana curry", "1 cup", 270, 12], ["Roasted chana", "1 handful (30 g)", 110, 6],
+    ["Mixed vegetable sabzi", "1 cup", 120, 3], ["Shak (leafy greens), cooked", "1 cup", 70, 3], ["Salad (cucumber, tomato, onion)", "1 bowl", 35, 1],
+    ["Aloo bhaji", "1 cup", 220, 3], ["Plain doi (yogurt)", "1 cup", 150, 9], ["Mishti doi", "1 cup", 250, 7],
+    ["Milk", "1 glass (250 ml)", 150, 8], ["Tea with milk and sugar", "1 cup", 90, 2], ["Tea with milk, no sugar", "1 cup", 40, 1],
+    ["Black tea or coffee", "1 cup", 2, 0], ["Banana", "1 medium", 105, 1], ["Apple", "1 medium", 95, 0.5],
+    ["Guava", "1 medium", 70, 3], ["Orange", "1 medium", 60, 1], ["Mango", "1 cup pieces", 100, 1],
+    ["Papaya", "1 cup pieces", 60, 1], ["Dates", "3 pieces", 200, 2], ["Peanuts", "1 handful (30 g)", 170, 7],
+    ["Almonds", "20 pieces", 140, 5], ["Biryani or kacchi", "1 plate", 750, 30], ["Fried rice", "1 plate", 550, 15],
+    ["Singara or samosa", "1 piece", 160, 3], ["Beguni or piyaju", "3 pieces", 180, 4], ["Chotpoti", "1 plate", 300, 10],
+    ["Fuchka", "6 pieces", 250, 5], ["Burger", "1 burger", 450, 20], ["Pizza", "1 slice", 285, 12],
+    ["French fries", "medium portion", 365, 4], ["Chips", "small pack (30 g)", 160, 2], ["Biscuits", "4 pieces", 140, 2],
+    ["Roshogolla or kalojam", "1 piece", 170, 3], ["Soft drink", "1 can (330 ml)", 140, 0], ["Packet juice", "250 ml", 120, 0],
+    ["Chocolate bar", "40 g", 210, 3], ["Instant noodles", "1 pack", 380, 8], ["Whey protein", "1 scoop", 120, 24],
+    ["Soy chunks, cooked", "30 g dry", 100, 16], ["Paneer", "100 g", 265, 18], ["Tofu", "100 g", 80, 8]
+  ].map(([n, u, k, p], i) => ({ id: "db" + i, n, u, kcal: k, p }));
+  const MEALS = [["breakfast", "Breakfast"], ["lunch", "Lunch"], ["snack", "Snacks"], ["dinner", "Dinner"]];
+  function defaultMeal() { const h = new Date().getHours(); return h < 11 ? "breakfast" : h < 15 ? "lunch" : h < 18 ? "snack" : "dinner"; }
+  function foodTotals(k) {
+    const f = (state.days[k] && state.days[k].food) || [];
+    return f.reduce((s, e) => ({ kcal: s.kcal + e.kcal * e.qty, p: s.p + e.p * e.qty }), { kcal: 0, p: 0 });
+  }
+
+  const RECIPES = [
+    { n: "Vegetable masala omelette", kcal: 260, p: 19, ing: ["3 eggs (or 2 eggs + 2 whites)", "½ onion, 1 tomato, green chilli, coriander", "Handful of spinach or capsicum", "1 tsp oil, salt, turmeric"], steps: ["Beat the eggs with salt and turmeric.", "Soften the onion and vegetables in 1 tsp oil for 2 minutes.", "Pour in the eggs, cook on low heat, fold. Eat with 1 roti and cucumber."] },
+    { n: "Light rui fish curry with lau", kcal: 290, p: 26, ing: ["2 pieces rui fish", "2 cups lau (bottle gourd), cubed", "1 onion, ginger-garlic paste, turmeric, chilli, cumin", "2 tsp oil"], steps: ["Rub the fish with turmeric and salt, sear 2 minutes per side in 1 tsp oil.", "Cook onion and spices in 1 tsp oil, add lau and ½ cup water, cover 10 minutes.", "Add the fish, simmer 5 minutes. Serve with one fist of rice and a big salad."] },
+    { n: "Masoor dal with 1 tsp tadka", kcal: 210, p: 13, ing: ["½ cup red lentils", "Turmeric, salt, 2 green chillies", "Tadka: 1 tsp oil, garlic, cumin, dried chilli"], steps: ["Boil the lentils with turmeric, salt and 2½ cups water until soft (15 minutes).", "Heat 1 tsp oil, fry garlic, cumin and chilli until golden, pour over the dal.", "Makes 2 bowls. Keep extra in the fridge for 3 days."] },
+    { n: "Chicken and vegetable stir-fry", kcal: 340, p: 38, ing: ["150 g boneless chicken, sliced", "Cabbage, capsicum, carrot, beans", "Soy sauce, garlic, ginger, chilli flakes", "2 tsp oil"], steps: ["Fry the chicken in 1 tsp oil on high heat until cooked, set aside.", "Stir-fry vegetables in 1 tsp oil with garlic and ginger for 3 minutes, still crunchy.", "Add the chicken and 1 tbsp soy sauce, toss. Eat as is or with 1 roti."] },
+    { n: "Chana chaat (no frying)", kcal: 280, p: 14, ing: ["1 cup boiled chana", "Onion, tomato, cucumber, green chilli, coriander", "Lemon juice, chaat masala, salt"], steps: ["Mix everything in a bowl.", "Squeeze plenty of lemon. A filling snack or light dinner."] },
+    { n: "Overnight oats with doi", kcal: 330, p: 18, ing: ["½ cup oats", "½ cup plain doi + ½ cup milk", "½ banana or apple, pinch of cinnamon", "1 tbsp chopped nuts"], steps: ["Mix oats, doi and milk in a jar, close and leave in the fridge overnight.", "In the morning add fruit, nuts and cinnamon. Breakfast in zero minutes."] }
+  ];
+
+  const TIPS = [
+    "Drink a glass of water before every meal. You'll eat less without trying.",
+    "Put your fork or hand down between bites. Fullness takes 20 minutes to reach your brain.",
+    "Eat the protein and vegetables on your plate first, rice last.",
+    "Use a smaller plate. The same food looks like more.",
+    "Keep cut fruit at eye level in the fridge and sweets out of sight.",
+    "A 10 minute walk after each meal adds about 3,000 steps a day.",
+    "Sleep is a diet tool. Tired people eat around 300 kcal more the next day.",
+    "Cutting sugar in tea from 2 spoons to 0 saves about 3 kg a year on its own.",
+    "Weigh yourself at the same time every morning, and only trust the weekly average.",
+    "Plan tomorrow's meals tonight. Hungry decisions are bad decisions.",
+    "Don't shop hungry. Take the shopping list from Food → Shopping.",
+    "Bored, stressed or tired? That's a craving, not hunger. Use Craving SOS.",
+    "Protein at breakfast keeps you full until lunch. Eggs, doi or dal.",
+    "Cook with a measured spoon of oil. Free-poured oil can add 300 kcal a meal.",
+    "At a dawat, take one plate, fill half with salad and vegetables, and don't go back.",
+    "Missed a day? Never miss two in a row. That's the whole secret.",
+    "Stand up during phone calls and walk around.",
+    "Take the stairs for 1–2 floors whenever you can.",
+    "Restaurant portions are often 2 servings. Share, or pack half.",
+    "Chew sugar-free gum or brush your teeth after dinner to close the kitchen.",
+    "Strength training keeps your muscle while you lose fat, so the weight you lose is fat.",
+    "Soreness 1–2 days after a workout is normal. Sharp joint pain is not.",
+    "Fried snacks soak up oil. A singara and a cup of sweet tea is about 250 kcal.",
+    "Liquid calories don't fill you up. Juice, soft drinks and sweet lassi count fully.",
+    "Write down everything you eat for a week. Most people find 300–500 hidden kcal.",
+    "Progress isn't only the scale: your waist, your sleep, your energy and your clothes all count.",
+    "A plateau of 2 weeks is normal. Keep going, tighten the food log, add 1,000 steps.",
+    "Pick a fixed workout time. Same time every day makes it automatic.",
+    "Have a glass of water when you wake up. You're slightly dehydrated after sleep.",
+    "Celebrate small wins: a full checklist day is a real achievement."
+  ];
 
   // ---------- daily checklist (times are minutes after waking) ----------
+  function wakeMin() { const [h, m] = (state.profile.wake || "07:00").split(":").map(Number); return h * 60 + m; }
   function checklist(c) {
     const w = WEEK[new Date().getDay()];
     const wake = state.profile.wake || "07:00";
-    return [
+    const base = [
       { id: "wake", at: 0, t: "Wake up and drink a glass of water", d: "Then 5–10 minutes of daylight outside or at a window." },
       { id: "breakfast", at: 30, t: "Protein breakfast", d: "2 eggs, doi or dal, plus 1 roti or oats. Tea without sugar." },
       { id: "move", at: 180, t: "Get up and walk for 5 minutes", d: "Do this every hour you sit. Refill your water bottle." },
       { id: "lunch", at: 330, t: "Lunch: half the plate vegetables", d: `A palm of fish, chicken or dal, and one fist of rice. About ${Math.round(c.protein / 3)} g protein.` },
       { id: "walk", at: 360, t: "10–15 minute walk after lunch", d: "It lowers the blood sugar spike after eating." },
       { id: "snack", at: 540, t: "Smart snack, only if hungry", d: "Fruit, plain doi or roasted chana. No biscuits or fried snacks." },
-      { id: "train", at: 630, t: `Workout: ${w.title}`, d: w.kind === "rest" ? "10 minutes of stretching. Rest counts." : "Open the Workouts tab for today's session." },
+      { id: "train", at: 630, t: `Workout: ${w.title}`, d: w.kind === "rest" ? "10 minutes of stretching. Rest counts." : "Open the Train tab and start today's session." },
       { id: "dinner", at: 750, t: "Dinner: plate method, lighter on rice", d: "Finish 3 hours before bed. Nothing to eat after this." },
       { id: "steps", at: 840, t: `Reach ${c.steps.toLocaleString()} steps`, d: "Short? A 15 minute walk now closes the gap. Ticks itself when you enter your steps." },
       { id: "water", at: 870, t: `Drink all ${c.glasses} glasses of water`, d: "Ticks itself when you fill the last glass." },
       { id: "drinks", at: 900, t: "No sugary drinks today", d: "No soft drinks, juice or sugar in tea." },
       { id: "winddown", at: 915, t: "Phone away, wind down", d: "Dim the lights, shower, stretch or read." },
       { id: "sleep", at: 960, t: "Lights out", d: "Aim for 7–8 hours. Same bedtime on weekends." }
-    ].map(it => ({ ...it, time: shift(wake, it.at) }));
+    ];
+    const wm = wakeMin();
+    const mine = (state.custom || []).map(x => {
+      const [h, m] = x.time.split(":").map(Number);
+      return { id: "c-" + x.id, at: (h * 60 + m - wm + 1440) % 1440, t: x.t, d: "Your own task." };
+    });
+    return base.concat(mine).sort((a, b) => a.at - b.at).map(it => ({ ...it, time: shift(wake, it.at) }));
   }
   // minutes since today's wake-up time (negative between midnight and waking)
-  function relNow() {
-    const [h, m] = (state.profile.wake || "07:00").split(":").map(Number);
-    const n = new Date();
-    return n.getHours() * 60 + n.getMinutes() - (h * 60 + m);
-  }
+  function relNow() { const n = new Date(); return n.getHours() * 60 + n.getMinutes() - wakeMin(); }
   function statusOf(it, d, rel) {
     if (d.h && d.h[it.id]) return "done";
     if (rel < it.at) return "later";
     return rel < it.at + 60 ? "now" : "late";
   }
-  function inMinutes(n) {
-    const h = Math.floor(n / 60), m = n % 60;
-    return h ? `${h} h${m ? " " + m + " min" : ""}` : `${m} min`;
+  function dayScore(k, ids) {
+    const d = state.days[k];
+    if (!d || !d.h || !ids.length) return 0;
+    return ids.filter(id => d.h[id]).length / ids.length;
+  }
+  function streaks(c) {
+    const ids = checklist(c).map(i => i.id);
+    const ok = k => dayScore(k, ids) >= 0.7;
+    let k = today(), cur = 0;
+    if (!ok(k)) k = addDays(k, -1);
+    while (ok(k) && k >= addDays(state.profile.startDate, -400)) { cur++; k = addDays(k, -1); }
+    let best = 0, run = 0;
+    for (let x = state.profile.startDate; x <= today(); x = addDays(x, 1)) { run = ok(x) ? run + 1 : 0; best = Math.max(best, run); }
+    return { cur, best: Math.max(best, cur), ids };
   }
 
   // ---------- phone calendar file ----------
@@ -430,8 +619,8 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
     const icsEsc = s => String(s).replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
     const fold = line => { const out = []; for (let i = 0; i < line.length; i += 60) out.push((i ? " " : "") + line.slice(i, i + 60)); return out.join("\r\n"); };
     const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Body Reset Coach//EN", "CALSCALE:GREGORIAN", "X-WR-CALNAME:Body Reset Coach"];
-    const ev = (uid, dateKey, time, title, desc, rrule) => lines.push(
-      "BEGIN:VEVENT", `UID:${uid}@body-reset-coach`, `DTSTAMP:${stamp}`,
+    const ev = (id, dateKey, time, title, desc, rrule) => lines.push(
+      "BEGIN:VEVENT", `UID:${id}@body-reset-coach`, `DTSTAMP:${stamp}`,
       `DTSTART:${dateKey.replace(/-/g, "")}T${time.replace(":", "")}00`, "DURATION:PT15M", `RRULE:${rrule}`,
       fold(`SUMMARY:${icsEsc(title)}`), fold(`DESCRIPTION:${icsEsc(desc)}`),
       "BEGIN:VALARM", "ACTION:DISPLAY", fold(`DESCRIPTION:${icsEsc(title)}`), "TRIGGER:PT0M", "END:VALARM", "END:VEVENT");
@@ -440,47 +629,64 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
     const BYDAY = ["SU", "MO", "TU", "WE", "TH", "FR", "SA"];
     WEEK.forEach((w, i) => {
       let k = start; while (parseKey(k).getDay() !== i) k = addDays(k, 1);
-      ev("train-" + BYDAY[i], k, shift(wake, 630), "Workout: " + w.title, w.desc + " Open the Workouts tab for the exercises.", "FREQ=WEEKLY;BYDAY=" + BYDAY[i]);
+      ev("train-" + BYDAY[i], k, shift(wake, 630), "Workout: " + w.title, w.desc + " Open the Train tab for the exercises.", "FREQ=WEEKLY;BYDAY=" + BYDAY[i]);
     });
     lines.push("END:VCALENDAR");
     return lines.join("\r\n") + "\r\n";
   }
   window.BodyReset = { ics: buildICS };
 
-  // ---------- views ----------
+  // ---------- small view helpers ----------
+  const segBar = (name, opts) => `<div class="seg" role="group">${opts.map(([v, l]) => `<button data-sub="${name}:${v}" aria-pressed="${sub[name] === v}">${l}</button>`).join("")}</div>`;
+  const meter = (val, max, cls = "") => `<div class="meter ${cls}"><i style="width:${Math.max(0, Math.min(100, max ? (val / max) * 100 : 0))}%"></i></div>`;
+  function actOptions(v) {
+    return [[1.2, "Mostly sitting (desk, little walking)"], [1.375, "Lightly active (some walking daily)"], [1.55, "Active (on feet most of the day)"]]
+      .map(([x, l]) => `<option value="${x}" ${Number(v) === x ? "selected" : ""}>${l}</option>`).join("");
+  }
+
+  // ---------- TODAY ----------
   function viewToday(c) {
     const t = today(), d = day(t), H = checklist(c), rel = relNow();
     const doneN = H.filter(h => d.h && d.h[h.id]).length;
     const pct = Math.round((doneN / H.length) * 100);
-    const [cls, tone] = bmiClass(c.bmi);
+    const [cls] = bmiClass(c.bmi);
     const lost = r1(state.profile.startWeight - c.current);
     const w = WEEK[new Date().getDay()];
     const p = state.profile;
     const wake = p.wake || "07:00";
-    const water = d.water || 0;
-    const steps = d.steps || 0;
+    const water = d.water || 0, steps = d.steps || 0;
+    const st = streaks(c);
+    const eaten = foodTotals(t);
+    const left = c.target - eaten.kcal;
+    const tip = TIPS[(c.dayNo - 1) % TIPS.length];
+    const moods = ["Low", "Meh", "OK", "Good", "Great"];
     return `
       ${nextUpCard(H, d, rel)}
       <div class="panel hero">
         <p class="label">${esc(fmtDateLong(t))} · Week ${c.week}, phase ${c.phase}</p>
-        <p class="hero-line">${p.name ? esc(p.name) + ", today" : "Today"} is about <em>${w.title.toLowerCase()}</em>, ${c.target.toLocaleString()} kcal and ${c.protein} g protein.</p>
+        <p class="hero-line">${p.name ? esc(p.name) + ", today" : "Today"} is about <em>${w.title.toLowerCase()}</em>, ${kc(c.target)} kcal and ${c.protein} g protein.</p>
         <div class="stats">
-          <div class="stat"><span class="label">Weight</span><b>${r1(c.current)} kg</b><span class="sub">${lost > 0 ? "−" + lost + " kg since start" : "starting point"}</span></div>
-          <div class="stat"><span class="label">BMI</span><b>${r1(c.bmi)}</b><span class="sub">${cls}</span></div>
-          <div class="stat"><span class="label">Eat about</span><b>${c.target.toLocaleString()}</b><span class="sub">kcal a day</span></div>
-          <div class="stat"><span class="label">Today's score</span><b>${doneN}/${H.length}</b><span class="sub">${pct >= 75 ? "Great day" : pct >= 50 ? "Good, keep going" : "Small wins count"}</span></div>
+          <div class="stat"><span class="label">Weight</span><b>${r1(c.current)} kg</b><span class="sub">${lost > 0 ? "−" + lost + " kg since start" : cls}</span></div>
+          <div class="stat"><span class="label">Streak</span><b>${st.cur} ${st.cur === 1 ? "day" : "days"}</b><span class="sub">best ${st.best} · 70%+ of checklist</span></div>
+          <div class="stat"><span class="label">Calories left</span><b>${eaten.kcal ? kc(left) : kc(c.target)}</b><span class="sub">${eaten.kcal ? kc(eaten.kcal) + " eaten so far" : "log food in the Food tab"}</span></div>
+          <div class="stat"><span class="label">Today</span><b>${doneN}/${H.length}</b><span class="sub">${pct >= 70 ? "Streak day secured" : pct >= 40 ? "Good, keep going" : "Small wins count"}</span></div>
         </div>
+      </div>
+      <div class="note ok">
+        <strong>Coach tip</strong>
+        <p class="small">${esc(tip)}</p>
+        <div class="row"><button class="btn small" id="open-sos">Craving SOS</button><button class="btn small" id="open-breathe">2-minute calm breathing</button></div>
       </div>
       <div class="grid2">
         <div class="panel">
           <div class="panel-head"><h2>Today's checklist</h2><span class="num muted">${doneN}/${H.length} done</span></div>
-          <div class="meter"><i style="width:${pct}%"></i></div>
-          <p class="small muted">Did it? Tick it. Times follow your ${fmt12(wake)} wake-up.</p>
+          ${meter(pct, 100)}
+          <p class="small muted">Did it? Tick it. Times follow your ${fmt12(wake)} wake-up. Add your own tasks in Me.</p>
           <ul class="checks">
             ${H.map(h => { const s = statusOf(h, d, rel); return `<li class="ti ${s}"><label class="check ${s === "done" ? "done" : ""}"><input type="checkbox" data-habit="${h.id}" id="h-${h.id}" ${s === "done" ? "checked" : ""}><span><span class="tm">${fmt12(h.time)}</span>${s === "now" ? ' <span class="pill">now</span>' : s === "late" ? ' <span class="pill warm">not ticked</span>' : ""}<br><span class="t">${esc(h.t)}</span><br><span class="d">${esc(h.d)}</span></span></label></li>`; }).join("")}
           </ul>
         </div>
-        <div style="display:grid;gap:20px;min-width:0">
+        <div class="stack">
           <div class="panel">
             <div class="panel-head"><h3>Water</h3><span class="num muted">${water}/${c.glasses} glasses</span></div>
             <div class="glasses">${Array.from({ length: c.glasses }, (_, i) => `<button class="glass ${i < water ? "full" : ""}" data-water="${i + 1}" aria-label="${i + 1} glasses"></button>`).join("")}</div>
@@ -488,10 +694,15 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
           </div>
           <div class="panel">
             <div class="panel-head"><h3>Steps</h3><span class="num muted">${steps.toLocaleString()} / ${c.steps.toLocaleString()}</span></div>
-            <div class="meter"><i style="width:${Math.min(100, (steps / c.steps) * 100)}%"></i></div>
-            <div class="row">
-              <div class="field"><label for="in-steps">Steps today</label><input id="in-steps" type="number" min="0" step="100" inputmode="numeric" value="${steps || ""}" placeholder="e.g. 6500"></div>
-            </div>
+            ${meter(steps, c.steps)}
+            <div class="field"><label for="in-steps">Steps today (from your phone's Health app)</label><input id="in-steps" type="number" min="0" step="100" inputmode="numeric" value="${steps || ""}" placeholder="e.g. 6500"></div>
+          </div>
+          <div class="panel">
+            <h3>Daily check-in</h3>
+            <div class="field"><label for="in-sleep">Hours slept last night</label><input id="in-sleep" type="number" min="0" max="16" step="0.5" inputmode="decimal" value="${d.sleep ?? ""}" placeholder="e.g. 7.5"></div>
+            <div class="field"><label>Mood</label><div class="scale">${moods.map((m, i) => `<button data-mood="${i + 1}" aria-pressed="${d.mood === i + 1}">${m}</button>`).join("")}</div></div>
+            <div class="field"><label>Energy</label><div class="scale">${["Drained", "Low", "OK", "Good", "High"].map((m, i) => `<button data-energy="${i + 1}" aria-pressed="${d.energy === i + 1}">${m}</button>`).join("")}</div></div>
+            ${typeof d.sleep === "number" && d.sleep < 6 ? `<p class="small" style="color:var(--warm)">Short sleep makes you hungrier today. Eat protein early, skip naps after 3 pm, and get to bed on time tonight.</p>` : ""}
           </div>
           <div class="panel">
             <h3>Weigh-in</h3>
@@ -536,61 +747,182 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
       </div>`;
   }
 
-  function fmt12(hhmm) {
-    let [h, m] = hhmm.split(":").map(Number);
-    const ap = h >= 12 ? "pm" : "am"; h = h % 12 || 12;
-    return `${h}:${pad(m)} ${ap}`;
-  }
-  function shift(hhmm, mins) {
-    const [h, m] = hhmm.split(":").map(Number);
-    let t = (h * 60 + m + mins) % 1440; if (t < 0) t += 1440;
-    return `${pad(Math.floor(t / 60))}:${pad(t % 60)}`;
-  }
-  function actOptions(v) {
-    return [[1.2, "Mostly sitting (desk, little walking)"], [1.375, "Lightly active (some walking daily)"], [1.55, "Active (on feet most of the day)"]]
-      .map(([x, l]) => `<option value="${x}" ${Number(v) === x ? "selected" : ""}>${l}</option>`).join("");
-  }
-
+  // ---------- TRAIN ----------
   function viewTrain(c) {
-    const wd = new Date().getDay(); const w = WEEK[wd]; const ph = PHASES[c.phase - 1];
-    const order = [1, 2, 3, 4, 5, 6, 0];
-    const names = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-    const exHtml = k => EX[k].map(e => `
-      <div class="ex">
-        <div class="ex-top"><h3>${e.n}</h3><span class="dose">${e.n.startsWith("Farmer") ? "2–3 × 30–40 steps" : e.n.startsWith("Side plank") ? ph.sets + " × 15–30 s / side" : e.n.startsWith("Bird") || e.n.startsWith("Dead") ? ph.sets + " × 6–8 / side" : ph.sets + " × " + ph.reps}</span></div>
+    return `${segBar("train", [["today", "Today"], ["plan", "12-week plan"], ["history", "History"]])}
+      ${sub.train === "plan" ? trainPlan(c) : sub.train === "history" ? trainHistory(c) : trainToday(c)}`;
+  }
+  function exCard(e, ph, i, s) {
+    const n = ph.setsN, done = s ? (s.done[i] || 0) : 0;
+    return `
+      <div class="ex ${s && done >= n ? "complete" : ""}">
+        <div class="ex-top"><h3>${i + 1}. ${e.n}</h3><span class="dose">${doseOf(e, ph)}</span></div>
         <p class="small">${e.d}</p>
         <p class="alt">Easier: ${e.easy} · Harder: ${e.hard}</p>
-      </div>`).join("");
-    let todayBlock;
-    if (w.kind === "A" || w.kind === "B") todayBlock = `<div class="ex-list">${exHtml(w.kind)}</div>`;
-    else if (w.kind === "walk") todayBlock = `<div class="note ok"><strong>${ph.walk}</strong><p class="small">${ph.walkTip} Knees or feet sore? Swap for cycling or swimming at the same effort.</p></div>`;
-    else todayBlock = `<div class="note ok"><strong>Stretch for 10 minutes</strong><p class="small">Hold each for 30 seconds, no bouncing: calf stretch on a wall, hip flexor lunge, hamstring stretch on a step, chest stretch in a doorway, child's pose, neck rolls.</p></div>`;
+        ${s ? `<div class="sets">${Array.from({ length: n }, (_, j) => `<button class="set ${j < done ? "done" : ""}" data-set="${i}:${j + 1}" aria-label="Set ${j + 1}">${j + 1}</button>`).join("")}</div>` : ""}
+      </div>`;
+  }
+  function trainToday(c) {
+    const wd = new Date().getDay(), w = WEEK[wd], ph = PHASES[c.phase - 1], s = state.session;
+    const t = today();
+    const doneToday = state.workouts.filter(x => x.d === t);
+    const walkForm = `
+      <div class="panel">
+        <h3>Log a walk or other cardio</h3>
+        <div class="row">
+          <div class="field"><label for="wk-min">Minutes</label><input id="wk-min" type="number" min="5" max="300" step="5" inputmode="numeric" placeholder="30"></div>
+          <div class="field"><label for="wk-kind">Type</label><select id="wk-kind"><option value="walk">Walk</option><option value="cycle">Cycling</option><option value="swim">Swimming</option><option value="sport">Sport or other</option></select></div>
+          <button class="btn primary" id="wk-log">Log it</button>
+        </div>
+      </div>`;
+    if (s) {
+      const ex = EX[s.kind];
+      const total = ex.length * ph.setsN, doneN = Object.values(s.done).reduce((a, b) => a + b, 0);
+      return `
+        <div class="panel">
+          <div class="panel-head"><h2>Strength ${s.kind} in progress</h2><span class="num muted">${doneN}/${total} sets</span></div>
+          ${meter(doneN, total)}
+          <p class="small muted">Tap a set's number when you finish it. A ${ph.rest} second rest timer starts on its own. Started ${fmt12(s.startHM)}.</p>
+        </div>
+        <div class="restbar" id="restbar" hidden><span id="rest-label">Rest</span><span class="num" id="rest-time">0:00</span><button id="rest-skip">Skip</button></div>
+        <div class="ex-list">${ex.map((e, i) => exCard(e, ph, i, s)).join("")}</div>
+        <div class="row"><button class="btn primary" id="wo-finish">Finish workout</button><button class="btn" id="wo-cancel">Cancel</button></div>`;
+    }
+    let main;
+    if (w.kind === "A" || w.kind === "B") {
+      main = `
+        <div class="panel">
+          <div class="panel-head"><h2>Today: ${w.title}</h2><span class="pill">Phase ${c.phase} · ${ph.name}</span></div>
+          <p class="small muted">${w.desc} Warm up first: 5 minutes of marching on the spot, arm circles and 10 slow half-squats.</p>
+          <button class="btn primary wide" data-startwo="${w.kind}">Start Strength ${w.kind}</button>
+          <div class="ex-list">${EX[w.kind].map((e, i) => exCard(e, ph, i, null)).join("")}</div>
+        </div>`;
+    } else if (w.kind === "walk") {
+      main = `
+        <div class="panel">
+          <div class="panel-head"><h2>Today: ${w.title}</h2><span class="pill">Phase ${c.phase} · ${ph.name}</span></div>
+          <div class="note ok"><strong>${ph.walk}</strong><p class="small">${ph.walkTip} Knees or feet sore? Swap for cycling or swimming at the same effort.</p></div>
+          <p class="small muted">${w.desc} Log it below when you're back.</p>
+          <div class="row"><button class="btn small" data-startwo="A">Do Strength A instead</button><button class="btn small" data-startwo="B">Do Strength B instead</button></div>
+        </div>`;
+    } else {
+      main = `
+        <div class="panel">
+          <div class="panel-head"><h2>Today: ${w.title}</h2><span class="pill">Phase ${c.phase}</span></div>
+          <p class="small muted">Hold each stretch for 30 seconds, no bouncing.</p>
+          <ol class="plain">${STRETCHES.map(x => `<li>${x}</li>`).join("")}</ol>
+          <button class="btn primary" id="wo-stretch">I stretched today</button>
+        </div>`;
+    }
     return `
-      <div class="panel">
-        <div class="panel-head"><h2>Today: ${w.title}</h2><span class="pill">Phase ${c.phase} · ${ph.name}</span></div>
-        <p class="small muted">${w.desc} Warm up first: 5 minutes of marching on the spot, arm circles and 10 slow half-squats.</p>
-        ${todayBlock}
-      </div>
-      <div class="panel">
-        <h2>This week</h2>
-        <div class="week">${order.map(i => `<div class="wd ${i === wd ? "today" : ""}"><span class="muted">${names[i]}</span><b>${WEEK[i].short}</b></div>`).join("")}</div>
-      </div>
-      <div class="panel">
-        <h2>The 12-week plan</h2>
-        <p class="small muted">Built for a heavier body that's starting out: low impact, kind to knees and back, done at home with a chair, a step and a backpack. No running or jumping until you're under about 95 kg and your knees feel good.</p>
-        <div class="phases">${PHASES.map(p => `<div class="phase ${p.n === c.phase ? "on" : ""}"><span class="label">${p.weeks}</span><h3>${p.name}</h3><p class="small">Strength: ${p.sets} × ${p.reps}</p><p class="small">Cardio: ${p.walk}</p><p class="small muted">${p.effort}</p></div>`).join("")}</div>
-      </div>
-      <div class="grid2">
-        <div class="panel"><h2>Strength A</h2><div class="ex-list">${exHtml("A")}</div></div>
-        <div class="panel"><h2>Strength B</h2><div class="ex-list">${exHtml("B")}</div></div>
-      </div>
+      ${doneToday.length ? `<div class="note ok"><strong>Done today: ${doneToday.map(x => woName(x)).join(", ")}.</strong><p class="small">Nice work. Ticked on your checklist.</p></div>` : ""}
+      ${main}
+      ${walkForm}
       <div class="note bad">
         <strong>Stop straight away and get medical help if you feel:</strong>
         <p class="small">chest pain or pressure, pain spreading to your arm, jaw or back, severe breathlessness, dizziness or fainting, or a racing or irregular heartbeat. Normal muscle soreness 1–2 days later is fine; sharp joint pain is not.</p>
       </div>`;
   }
+  const woName = x => x.kind === "A" || x.kind === "B" ? `Strength ${x.kind}` : x.kind === "stretch" ? "Stretching" : ({ walk: "Walk", cycle: "Cycling", swim: "Swimming", sport: "Sport" }[x.kind] || "Workout") + (x.mins ? ` ${x.mins} min` : "");
+  function trainPlan(c) {
+    const wd = new Date().getDay(), order = [1, 2, 3, 4, 5, 6, 0], names = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"], ph = PHASES[c.phase - 1];
+    return `
+      <div class="panel">
+        <h2>Your week</h2>
+        <div class="week">${order.map(i => `<div class="wd ${i === wd ? "today" : ""}"><span class="muted">${names[i]}</span><b>${WEEK[i].short}</b></div>`).join("")}</div>
+      </div>
+      <div class="panel">
+        <h2>The 12-week plan</h2>
+        <p class="small muted">Built for a heavier body that's starting out: low impact, kind to knees and back, done at home with a chair, a step and a backpack. No running or jumping until your knees feel good and you've lost your first 10%.</p>
+        <div class="phases">${PHASES.map(p => `<div class="phase ${p.n === c.phase ? "on" : ""}"><span class="label">${p.weeks}</span><h3>${p.name}</h3><p class="small">Strength: ${p.sets} × ${p.reps}, rest ${p.rest} s</p><p class="small">Cardio: ${p.walk}</p><p class="small muted">${p.effort}</p></div>`).join("")}</div>
+        <p class="small muted">After week 12, repeat phase 3 with more weight, or ask a trainer about gym machines.</p>
+      </div>
+      <div class="grid2">
+        <div class="panel"><h2>Strength A</h2><div class="ex-list">${EX.A.map((e, i) => exCard(e, ph, i, null)).join("")}</div></div>
+        <div class="panel"><h2>Strength B</h2><div class="ex-list">${EX.B.map((e, i) => exCard(e, ph, i, null)).join("")}</div></div>
+      </div>`;
+  }
+  function trainHistory(c) {
+    const ws = state.workouts.slice().sort((a, b) => (b.d + (b.at || "")).localeCompare(a.d + (a.at || "")));
+    const last7 = ws.filter(x => diffDays(x.d, today()) < 7);
+    const mins7 = last7.reduce((s, x) => s + (x.mins || 0), 0);
+    const str7 = last7.filter(x => x.kind === "A" || x.kind === "B").length;
+    return `
+      <div class="panel hero">
+        <p class="label">Last 7 days</p>
+        <div class="stats">
+          <div class="stat"><span class="label">Workouts</span><b>${last7.length}</b><span class="sub">aim for 5–6</span></div>
+          <div class="stat"><span class="label">Strength</span><b>${str7}</b><span class="sub">aim for 2–3</span></div>
+          <div class="stat"><span class="label">Active minutes</span><b>${mins7}</b><span class="sub">aim for 150+</span></div>
+          <div class="stat"><span class="label">All time</span><b>${ws.length}</b><span class="sub">sessions logged</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Workout log</h2>
+        ${ws.length ? `<div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Workout</th><th>Time</th><th></th></tr></thead><tbody>
+          ${ws.slice(0, 40).map(x => `<tr><td>${fmtDate(x.d)}</td><td>${woName(x)}${x.of ? ` <span class="muted small">${x.sets}/${x.of} sets</span>` : ""}</td><td class="n">${x.mins ? x.mins + " min" : "–"}</td><td><button class="btn small" data-delwo="${x.id}">Remove</button></td></tr>`).join("")}
+        </tbody></table></div>` : `<p class="muted">No workouts yet. Start today's session or log a walk under Today.</p>`}
+      </div>`;
+  }
 
+  // ---------- FOOD ----------
   function viewFood(c) {
+    return `${segBar("food", [["log", "Diary"], ["guide", "Guide"], ["recipes", "Recipes"], ["shop", "Shopping"]])}
+      ${sub.food === "guide" ? foodGuide(c) : sub.food === "recipes" ? foodRecipes() : sub.food === "shop" ? foodShop() : foodLog(c)}`;
+  }
+  function foodResults() {
+    const q = foodQuery.trim().toLowerCase();
+    const all = (state.myFoods || []).map(f => ({ ...f, mine: true })).concat(FOODS);
+    const list = q ? all.filter(f => f.n.toLowerCase().includes(q)) : all.slice(0, 12);
+    if (!list.length) return `<p class="small muted">No match. Add it as your own food below.</p>`;
+    return list.slice(0, 40).map(f => `<button class="result" data-addfood="${f.id}"><span><b>${esc(f.n)}</b>${f.mine ? ' <span class="chip ok">mine</span>' : ""}<br><span class="small muted">${esc(f.u)}</span></span><span class="k">${kc(f.kcal)} kcal · ${r1(f.p)} g</span></button>`).join("");
+  }
+  function foodLog(c) {
+    const t = today(), d = day(t), f = d.food || [];
+    const tot = foodTotals(t);
+    const left = c.target - tot.kcal;
+    const yesterday = (state.days[addDays(t, -1)] || {}).food || [];
+    return `
+      <div class="panel hero">
+        <p class="label">Today's food</p>
+        <p class="hero-line">${tot.kcal ? `<em>${kc(tot.kcal)}</em> of ${kc(c.target)} kcal. ${left >= 0 ? kc(left) + " left." : kc(-left) + " over."}` : `You have <em>${kc(c.target)} kcal</em> and ${c.protein} g protein to spend today.`}</p>
+        <div class="field"><span class="label">Calories ${kc(tot.kcal)} / ${kc(c.target)}</span>${meter(tot.kcal, c.target, left < 0 ? "bad" : left < 200 ? "warm" : "")}</div>
+        <div class="field"><span class="label">Protein ${Math.round(tot.p)} / ${c.protein} g</span>${meter(tot.p, c.protein)}</div>
+        ${left < 0 ? `<p class="small" style="color:var(--danger)">Over for today. No stress: one day doesn't matter. Add a walk and get back on track tomorrow.</p>` : ""}
+      </div>
+      <div class="grid2">
+        <div class="panel">
+          <h2>Add food</h2>
+          <div class="seg" role="group">${MEALS.map(([v, l]) => `<button data-meal="${v}" aria-pressed="${foodMeal === v}">${l}</button>`).join("")}</div>
+          <div class="field"><label for="f-q">Search ${FOODS.length}+ foods</label><input id="f-q" type="search" autocomplete="off" placeholder="rice, egg, dal, biryani…" value="${esc(foodQuery)}"></div>
+          <div class="results" id="f-res">${foodResults()}</div>
+          <details class="recipe">
+            <summary>Add your own food</summary>
+            <div class="row">
+              <div class="field" style="flex-basis:100%"><label for="f-name">Name and portion</label><input id="f-name" type="text" maxlength="60" placeholder="e.g. Mum's chicken roast, 1 piece"></div>
+              <div class="field"><label for="f-kcal">kcal</label><input id="f-kcal" type="number" min="0" max="3000" inputmode="numeric"></div>
+              <div class="field"><label for="f-p">Protein (g)</label><input id="f-p" type="number" min="0" max="200" step="0.5" inputmode="decimal"></div>
+            </div>
+            <label class="check" style="padding-inline:0"><input type="checkbox" id="f-save" checked><span class="small">Save to my foods for next time</span></label>
+            <button class="btn primary" id="f-add">Add to ${MEALS.find(m => m[0] === foodMeal)[1].toLowerCase()}</button>
+            <p class="small muted" id="f-msg"></p>
+          </details>
+        </div>
+        <div class="panel">
+          <div class="panel-head"><h2>Eaten today</h2>${!f.length && yesterday.length ? `<button class="btn small" id="f-copy">Copy yesterday</button>` : ""}</div>
+          ${f.length ? MEALS.map(([v, l]) => {
+            const items = f.filter(e => e.meal === v);
+            if (!items.length) return "";
+            const sum = items.reduce((s, e) => s + e.kcal * e.qty, 0);
+            return `<div class="mealhead"><h3>${l}</h3><span class="num small muted">${kc(sum)} kcal</span></div>
+              <ul class="entries">${items.map(e => `<li class="entry"><span><b>${esc(e.n)}</b><br><span class="small muted">${esc(e.u)} · ${kc(e.kcal * e.qty)} kcal · ${r1(e.p * e.qty)} g protein</span></span>
+                <span class="qty"><button class="iconbtn" data-fq="${e.id}:-0.5" aria-label="Less">−</button><span class="num">${e.qty}×</span><button class="iconbtn" data-fq="${e.id}:0.5" aria-label="More">+</button></span></li>`).join("")}</ul>`;
+          }).join("") : `<p class="muted">Nothing logged yet. Pick a meal above, search, and tap a food to add it. Use − to remove.</p>`}
+        </div>
+      </div>
+      <p class="small muted">Calories are typical home-cooked portions. Restaurant food usually has more oil.</p>`;
+  }
+  function foodGuide(c) {
     const meals = [
       ["Breakfast", "2 eggs (boiled, or an omelette with onion, tomato, chilli in 1 tsp oil) + 1 atta roti + cucumber. Tea or coffee without sugar.", 400],
       ["Lunch", "1 cup cooked rice (one fist) + fish or chicken curry (one palm, light oil) + big bowl of shak or sabzi + small bowl of dal.", 600],
@@ -612,14 +944,14 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
     return `
       <div class="panel hero">
         <p class="label">Your daily targets</p>
-        <p class="hero-line">Eat about <em>${c.target.toLocaleString()} kcal</em> with ${c.protein} g of protein. That's a steady loss of about 0.5–0.7 kg a week.</p>
+        <p class="hero-line">Eat about <em>${kc(c.target)} kcal</em> with ${c.protein} g of protein. That's a steady loss of about 0.5–0.7 kg a week.</p>
         <div class="stats">
-          <div class="stat"><span class="label">Your burn</span><b>${Math.round(c.tdee).toLocaleString()}</b><span class="sub">kcal/day at current weight</span></div>
-          <div class="stat"><span class="label">Target</span><b>${c.target.toLocaleString()}</b><span class="sub">500 kcal below burn</span></div>
+          <div class="stat"><span class="label">Your burn</span><b>${kc(c.tdee)}</b><span class="sub">kcal/day at current weight</span></div>
+          <div class="stat"><span class="label">Target</span><b>${kc(c.target)}</b><span class="sub">500 kcal below burn</span></div>
           <div class="stat"><span class="label">Protein</span><b>${c.protein} g</b><span class="sub">about ${Math.round(c.protein / 3)} g per meal</span></div>
           <div class="stat"><span class="label">Fibre</span><b>30 g</b><span class="sub">vegetables, dal, fruit</span></div>
         </div>
-        <p class="small muted">Targets recalculate as your weight drops. You don't need to count calories every day: follow the plate method and the swaps, and count for a week now and then to check.</p>
+        <p class="small muted">Targets recalculate as your weight drops. You don't need to log every day: follow the plate method and the swaps, and log for a week now and then to check.</p>
       </div>
       <div class="grid2">
         <div class="panel">
@@ -639,8 +971,8 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
           </div>
         </div>
         <div class="panel">
-          <div class="panel-head"><h2>A sample day</h2><span class="num muted">≈ ${tot.toLocaleString()} kcal</span></div>
-          <div class="meals">${meals.map(m => `<div class="meal"><b>${m[0]}</b><span class="k">~${m[2]} kcal</span><p class="small muted" style="grid-column:1/-1">${m[1]}</p></div>`).join("")}</div>
+          <div class="panel-head"><h2>A sample day</h2><span class="num muted">≈ ${kc(tot)} kcal</span></div>
+          <div class="entries">${meals.map(m => `<div class="entry"><span><b>${m[0]}</b><br><span class="small muted">${m[1]}</span></span><span class="num small muted">~${m[2]}</span></div>`).join("")}</div>
         </div>
         <div class="panel wide">
           <h2>Easy swaps</h2>
@@ -656,13 +988,90 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
             <li><b>Protein and vegetables first,</b> rice last. You'll naturally eat less of it.</li>
             <li><b>Eat slowly.</b> Put the spoon down between bites. Fullness takes about 20 minutes to reach your brain.</li>
             <li><b>Plan the treats.</b> 80% on plan, 20% flexible. One biryani on Friday is fine; daily snacks from the shop add up.</li>
+            <li><b>Dawat and eating out:</b> one plate, half salad and vegetables, protein next, small rice. Skip the soft drink.</li>
             <li><b>Keep junk out of the house.</b> What's on the counter gets eaten.</li>
             <li><b>Don't crash diet.</b> Eating under ${state.profile.sex === "f" ? "1,300" : "1,500"} kcal makes you lose muscle, feel weak and quit.</li>
           </ul>
         </div>
       </div>`;
   }
+  function foodRecipes() {
+    return `
+      <div class="panel">
+        <h2>Simple healthy recipes</h2>
+        <p class="small muted">Everyday deshi food with less oil and more protein. Tap a recipe to open it.</p>
+        ${RECIPES.map(r => `<details class="recipe"><summary><span>${r.n}</span><span class="num small muted">${r.kcal} kcal · ${r.p} g protein</span></summary>
+          <p class="label">You need</p><ul>${r.ing.map(x => `<li>${x}</li>`).join("")}</ul>
+          <p class="label" style="margin-top:8px">Steps</p><ol>${r.steps.map(x => `<li>${x}</li>`).join("")}</ol></details>`).join("")}
+      </div>`;
+  }
+  function foodShop() {
+    const g = state.grocery || [];
+    const left = g.filter(x => !x.done).length;
+    return `
+      <div class="panel">
+        <div class="panel-head"><h2>Shopping list</h2><span class="num muted">${left} to buy</span></div>
+        <p class="small muted">Tick things as they go in the bag. Healthy food at home makes the plan easy.</p>
+        <ul class="checks">${g.map(x => `<li><label class="check ${x.done ? "done" : ""}"><input type="checkbox" data-groc="${x.id}" id="g-${x.id}" ${x.done ? "checked" : ""}><span class="t" style="font-weight:400">${esc(x.t)}</span></label></li>`).join("")}</ul>
+        <div class="row"><div class="field"><label for="g-new">Add an item</label><input id="g-new" type="text" maxlength="60" placeholder="e.g. Lemons"></div><button class="btn" id="g-add">Add</button></div>
+        <div class="row"><button class="btn small" id="g-clear">Untick all for next shop</button><button class="btn small" id="g-remove">Remove ticked items</button></div>
+      </div>`;
+  }
 
+  // ---------- PROGRESS ----------
+  function weekStats(endK, ids) {
+    const ks = Array.from({ length: 7 }, (_, i) => addDays(endK, -i));
+    const pick = f => ks.map(k => state.days[k] && state.days[k][f]).filter(v => typeof v === "number");
+    const food = ks.map(foodTotals).filter(t => t.kcal > 0).map(t => t.kcal);
+    return {
+      w: avg(pick("weight")), sleep: avg(pick("sleep")), steps: avg(pick("steps")), kcal: avg(food), foodDays: food.length,
+      score: avg(ks.map(k => dayScore(k, ids))), wo: state.workouts.filter(x => ks.includes(x.d)).length
+    };
+  }
+  function coachSays(c, a, b) {
+    const out = [];
+    const dw = a.w !== null && b.w !== null ? a.w - b.w : null;
+    if (dw !== null && dw <= -1.2) out.push("You're losing fast. Add about 150 kcal a day (an egg and a fruit) so you keep your muscle.");
+    else if (dw !== null && dw < -0.1) out.push(`Down ${r1(-dw)} kg on the weekly average. Right on track. Keep everything the same.`);
+    else if (dw !== null) out.push("Your weight held steady this week. Common causes: extra rice or oil, weekend eating, or water from salt. Log every meal for 7 days and add 1,000 steps a day.");
+    if (a.score !== null && a.score < 0.5) out.push("Your checklist was under half done. Pick just 3 tasks to never miss: protein breakfast, walk after lunch, no sugary drinks.");
+    if (a.wo < 3) out.push("Fewer than 3 workouts this week. Put your workout time in your calendar like a meeting.");
+    if (a.sleep !== null && a.sleep < 6.5) out.push(`You slept about ${r1(a.sleep)} hours a night. Move bedtime 15 minutes earlier each week.`);
+    if (a.kcal !== null && a.kcal > c.target + 150) out.push(`On days you logged, you averaged ${kc(a.kcal)} kcal, above your ${kc(c.target)} target. Look at oil, rice and snacks first.`);
+    if (!out.length) out.push("Log your weight, food and workouts for a week to get a full report.");
+    return out;
+  }
+  function badges(c, st) {
+    const ws = c.ws, start = state.profile.startWeight, lost = start - c.current;
+    const ids = st.ids;
+    const daysK = Object.keys(state.days);
+    const perfect = daysK.some(k => dayScore(k, ids) >= 1);
+    const waterDays = daysK.filter(k => (state.days[k].water || 0) >= c.glasses).length;
+    const foodDays = daysK.filter(k => (state.days[k].food || []).length >= 3).length;
+    const waists = daysK.filter(k => typeof state.days[k].waist === "number").sort().map(k => state.days[k].waist);
+    const waistDrop = waists.length > 1 ? waists[0] - waists[waists.length - 1] : 0;
+    const wo = state.workouts.length;
+    const labsDone = Object.values(state.labs || {}).filter(Boolean).length;
+    return [
+      ["Go", "Started", "Set up your plan", true],
+      ["1", "First tick", "Tick your first checklist task", daysK.some(k => dayScore(k, ids) > 0)],
+      ["100", "Perfect day", "Tick every task in one day", perfect],
+      ["3", "On a roll", "3-day streak", st.best >= 3],
+      ["7", "One week strong", "7-day streak", st.best >= 7],
+      ["30", "Habit made", "30-day streak", st.best >= 30],
+      ["W1", "First workout", "Log any workout", wo >= 1],
+      ["W10", "Ten sessions", "Log 10 workouts", wo >= 10],
+      ["W25", "Regular", "Log 25 workouts", wo >= 25],
+      ["H2O", "Hydrated", "Hit your water goal on 7 days", waterDays >= 7],
+      ["Log", "Food detective", "Log 3+ foods on 7 days", foodDays >= 7],
+      ["−1", "First kilo", "Lose 1 kg", lost >= 1],
+      ["5%", "5% down", `Reach ${r1(start * 0.95)} kg`, c.current <= start * 0.95 && ws.length > 1],
+      ["10%", "10% down", `Reach ${r1(start * 0.9)} kg`, c.current <= start * 0.9 && ws.length > 1],
+      ["<30", "Out of obesity range", "BMI under 30", c.bmi < 30 && ws.length > 1],
+      ["−5", "Belt notch", "Waist down 5 cm", waistDrop >= 5],
+      ["Dr", "Checked up", "Tick all 8 checkups in Health", labsDone >= 8]
+    ].map(([m, t, how, got]) => ({ m, t, how, got }));
+  }
   function viewProgress(c) {
     const p = state.profile, ws = c.ws, h2 = c.h * c.h;
     const start = p.startWeight;
@@ -670,21 +1079,28 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
     const pctLost = r1((lost / start) * 100);
     const wk = weekChange(ws);
     const rate = 0.6;
+    const st = streaks(c);
     const miles = [
       [start * 0.95, "Lose 5% of body weight", "Blood pressure, sugar and joint pain start improving"],
       [30 * h2, "BMI under 30", "Out of the obesity range"],
       [start * 0.9, "Lose 10% of body weight", "Big drop in diabetes and heart risk, less liver fat"],
       [27.5 * h2, "BMI under 27.5", "Below the higher-risk line used for South Asian adults"],
       [24.9 * h2, "BMI under 25", "Healthy weight range"]
-    ].sort((a, b) => b[0] - a[0]);
-    const H = checklist(c).length;
+    ].filter(m => m[0] < start).sort((a, b) => b[0] - a[0]);
+    const ids = st.ids, H = ids.length;
     const heat = Array.from({ length: 56 }, (_, i) => {
-      const k = addDays(today(), i - 55); const d = state.days[k];
-      const n = d && d.h ? Object.values(d.h).filter(Boolean).length : 0;
-      const l = n === 0 ? 0 : n < H / 2 ? 1 : n < H ? 2 : 3;
-      return `<i data-l="${l}" class="${k === today() ? "today" : ""}" title="${fmtDate(k)}: ${n}/${H}"></i>`;
+      const k = addDays(today(), i - 55), s = dayScore(k, ids);
+      const l = s === 0 ? 0 : s < 0.4 ? 1 : s < 0.7 ? 2 : 3;
+      return `<i data-l="${l}" class="${k === today() ? "today" : ""}" title="${fmtDate(k)}: ${Math.round(s * H)}/${H}"></i>`;
     }).join("");
     const recent = ws.slice().reverse().slice(0, 14);
+    const thisW = weekStats(today(), ids), lastW = weekStats(addDays(today(), -7), ids);
+    const waists = Object.keys(state.days).filter(k => typeof state.days[k].waist === "number").sort().map(k => ({ k, v: state.days[k].waist }));
+    const waistNow = waists.length ? waists[waists.length - 1].v : null;
+    const whtr = waistNow ? waistNow / p.heightCm : null;
+    const B = badges(c, st);
+    const fmtD = (a, b, unit, dec = 1) => a === null ? "–" : `${dec ? r1(a) : kc(a)}${unit}${b !== null && a !== null ? ` <span class="sub">(${a - b > 0 ? "+" : ""}${dec ? r1(a - b) : kc(a - b)})</span>` : ""}`;
+    const nextMile = miles.find(m => c.current > m[0]);
     return `
       <div class="panel hero">
         <p class="label">Since ${fmtDate(p.startDate)}</p>
@@ -692,19 +1108,35 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
         <div class="stats">
           <div class="stat"><span class="label">Current</span><b>${r1(c.current)} kg</b><span class="sub">BMI ${r1(c.bmi)}</span></div>
           <div class="stat"><span class="label">Last 7 days</span><b>${wk === null ? "–" : (wk > 0 ? "+" : wk < 0 ? "−" : "") + Math.abs(wk) + " kg"}</b><span class="sub">${wk === null ? "needs a week of weigh-ins" : wk <= -1.2 ? "fast, eat a bit more" : wk < 0 ? "right on track" : "plateaus are normal"}</span></div>
-          <div class="stat"><span class="label">Next goal</span><b>${(() => { const m = miles.find(m => c.current > m[0]); return m ? r1(m[0]) + " kg" : "Done!"; })()}</b><span class="sub">${(() => { const m = miles.find(m => c.current > m[0]); return m ? m[1] : "Keep it up"; })()}</span></div>
-          <div class="stat"><span class="label">Healthy weight</span><b>${Math.round(18.5 * h2)}–${Math.round(24.9 * h2)}</b><span class="sub">kg for your height</span></div>
+          <div class="stat"><span class="label">Next goal</span><b>${nextMile ? r1(nextMile[0]) + " kg" : "Done!"}</b><span class="sub">${nextMile ? nextMile[1] : "Keep it up"}</span></div>
+          <div class="stat"><span class="label">Streak</span><b>${st.cur} ${st.cur === 1 ? "day" : "days"}</b><span class="sub">best ${st.best}</span></div>
         </div>
       </div>
       <div class="panel chart">
         <div class="panel-head"><h2>Weight trend</h2><span class="small muted">dots: weigh-ins · solid: 7-day average · dashed: plan at ${rate} kg/week</span></div>
         ${chart(ws, start, p.startDate, miles, rate)}
       </div>
+      <div class="panel">
+        <div class="panel-head"><h2>Weekly report</h2><span class="small muted">last 7 days (change vs the week before)</span></div>
+        <div class="report">
+          <div class="stat"><span class="label">Avg weight</span><b>${fmtD(thisW.w, lastW.w, " kg")}</b></div>
+          <div class="stat"><span class="label">Checklist</span><b>${thisW.score === null ? "–" : Math.round(thisW.score * 100) + "%"}</b><span class="sub">last week ${lastW.score === null ? "–" : Math.round(lastW.score * 100) + "%"}</span></div>
+          <div class="stat"><span class="label">Workouts</span><b>${thisW.wo}</b><span class="sub">last week ${lastW.wo}</span></div>
+          <div class="stat"><span class="label">Avg calories</span><b>${thisW.kcal === null ? "–" : kc(thisW.kcal)}</b><span class="sub">${thisW.foodDays} ${thisW.foodDays === 1 ? "day" : "days"} logged</span></div>
+          <div class="stat"><span class="label">Avg sleep</span><b>${thisW.sleep === null ? "–" : r1(thisW.sleep) + " h"}</b></div>
+          <div class="stat"><span class="label">Avg steps</span><b>${thisW.steps === null ? "–" : kc(thisW.steps)}</b></div>
+        </div>
+        <div class="note ok"><strong>Coach says</strong><ul class="plain small">${coachSays(c, thisW, lastW).map(x => `<li>${x}</li>`).join("")}</ul></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><h2>Badges</h2><span class="num muted">${B.filter(b => b.got).length}/${B.length}</span></div>
+        <div class="badges">${B.map(b => `<div class="badge ${b.got ? "" : "locked"}"><span class="medal">${b.m}</span><b>${b.t}</b><span>${b.got ? "Earned" : b.how}</span></div>`).join("")}</div>
+      </div>
       <div class="grid2">
         <div class="panel">
           <h2>Milestones</h2>
           <ul class="miles">${miles.map(([w, t, why]) => {
-            const hit = c.current <= w;
+            const hit = c.current <= w && ws.length > 1;
             const weeksAway = Math.max(0, Math.ceil((c.current - w) / rate));
             return `<li class="${hit ? "hit" : ""}"><span class="dot"></span><span><b>${t}</b><br><span class="small muted">${why}</span></span><span class="num small">${r1(w)} kg<br><span class="muted">${hit ? "reached" : "~" + fmtDate(addDays(today(), weeksAway * 7))}</span></span></li>`;
           }).join("")}</ul>
@@ -714,7 +1146,14 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
           <div class="heat">${heat}</div>
           <p class="small muted">Darker means more of your daily checklist ticked. Aim to fill most squares, not every one.</p>
         </div>
-        <div class="panel wide">
+        <div class="panel">
+          <h2>Waist</h2>
+          ${waistNow ? `<div class="stats">
+            <div class="stat"><span class="label">Now</span><b>${r1(waistNow)} cm</b><span class="sub">${waists.length > 1 ? (waists[0].v - waistNow >= 0 ? "−" : "+") + r1(Math.abs(waists[0].v - waistNow)) + " cm since " + fmtDate(waists[0].k) : "first measurement"}</span></div>
+            <div class="stat"><span class="label">Waist ÷ height</span><b>${whtr.toFixed(2)}</b><span class="sub">${whtr < 0.5 ? "healthy, under 0.5" : "aim for under 0.5"}</span></div>
+          </div>` : `<p class="muted">Measure your waist at the belly button once a week and add it with your weigh-in on the Today tab. It often drops when the scale doesn't.</p>`}
+        </div>
+        <div class="panel">
           <h2>Weigh-in log</h2>
           ${recent.length ? `<div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Weight</th><th>Waist</th><th></th></tr></thead><tbody>
             ${recent.map(e => `<tr><td>${fmtDate(e.k)}</td><td class="n">${r1(e.w)} kg</td><td class="n">${state.days[e.k].waist ? state.days[e.k].waist + " cm" : "–"}</td><td><button class="btn small" data-delw="${e.k}">Remove</button></td></tr>`).join("")}
@@ -739,7 +1178,7 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
     const lastK = ws.length ? ws[ws.length - 1].k : startDate;
     const span = Math.max(84, diffDays(startDate, lastK) + 7);
     const plan = [0, span].map(dd => start - (rate * dd) / 7);
-    const vals = ws.map(e => e.w).concat(plan, [start, miles[1][0]]);
+    const vals = ws.map(e => e.w).concat(plan, [start], miles[1] ? [miles[1][0]] : []);
     let lo = Math.floor(Math.min(...vals) - 1), hi = Math.ceil(Math.max(...vals) + 1);
     const step = hi - lo > 24 ? 5 : 2;
     lo = Math.floor(lo / step) * step; hi = Math.ceil(hi / step) * step;
@@ -751,19 +1190,76 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
     miles.slice(0, 2).forEach(([v, t]) => { if (v > lo && v < hi) g += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--warm)" stroke-dasharray="2 4" stroke-width="1.5"/><text x="${W - R}" y="${y(v) - 5}" text-anchor="end" style="fill:var(--warm)">${t.replace("Lose ", "−").replace(" of body weight", "")}</text>`; });
     g += `<line x1="${x(0)}" y1="${y(plan[0])}" x2="${x(span)}" y2="${y(plan[1])}" stroke="var(--muted)" stroke-dasharray="6 5" stroke-width="1.5"/>`;
     const pts = ws.map(e => ({ dd: diffDays(startDate, e.k), w: e.w })).filter(p => p.dd >= 0);
-    const avg = pts.map((p, i) => { const win = pts.slice(Math.max(0, i - 6), i + 1); return { dd: p.dd, w: win.reduce((s, q) => s + q.w, 0) / win.length }; });
-    if (avg.length > 1) g += `<polyline points="${avg.map(p => x(p.dd) + "," + y(p.w)).join(" ")}" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>`;
+    const av = pts.map((p, i) => { const win = pts.slice(Math.max(0, i - 6), i + 1); return { dd: p.dd, w: win.reduce((s, q) => s + q.w, 0) / win.length }; });
+    if (av.length > 1) g += `<polyline points="${av.map(p => x(p.dd) + "," + y(p.w)).join(" ")}" fill="none" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>`;
     g += pts.map((p, i) => `<circle cx="${x(p.dd)}" cy="${y(p.w)}" r="${i === pts.length - 1 ? 5.5 : 3.5}" fill="${i === pts.length - 1 ? "var(--accent)" : "var(--surface)"}" stroke="var(--accent)" stroke-width="2"/>`).join("");
     if (pts.length) { const lp = pts[pts.length - 1]; g += `<text x="${Math.min(x(lp.dd) + 9, W - R - 40)}" y="${y(lp.w) - 9}" style="fill:var(--ink);font-weight:600">${r1(lp.w)}</text>`; }
     return `<svg viewBox="0 0 ${W} ${Ht}" role="img" aria-label="Weight chart">${g}</svg>`;
   }
 
+  // ---------- HEALTH ----------
   function viewHealth(c) {
+    return `${segBar("health", [["readings", "BP & sugar"], ["checkups", "Checkups"], ["calm", "Sleep & stress"]])}
+      ${sub.health === "checkups" ? healthCheckups(c) : sub.health === "calm" ? healthCalm() : healthReadings()}`;
+  }
+  function bpClass(s, d) {
+    if (s > 180 || d > 120) return ["Very high: get medical help now", "bad"];
+    if (s >= 140 || d >= 90) return ["High (stage 2): see a doctor", "bad"];
+    if (s >= 130 || d >= 80) return ["High (stage 1)", "warn"];
+    if (s >= 120) return ["Elevated", "warn"];
+    if (s < 90 || d < 60) return ["Low", "warn"];
+    return ["Normal", "ok"];
+  }
+  function sugarClass(mg, when) {
+    if (mg < 70) return ["Low: eat 15 g of fast sugar now", "bad"];
+    if (when === "fasting") return mg < 100 ? ["Normal", "ok"] : mg < 126 ? ["Prediabetes range", "warn"] : ["Diabetes range: see a doctor", "bad"];
+    if (when === "after") return mg < 140 ? ["Normal", "ok"] : mg < 200 ? ["Prediabetes range", "warn"] : ["Diabetes range: see a doctor", "bad"];
+    return mg < 200 ? ["Normal for a random test", "ok"] : ["High: see a doctor", "bad"];
+  }
+  function healthReadings() {
+    const list = (state.readings || []).slice().sort((a, b) => (b.d + b.time).localeCompare(a.d + a.time));
+    const fmtSugar = r => r.unit === "mmol" ? `${r1(r.mg / 18)} mmol/L` : `${Math.round(r.mg)} mg/dL`;
+    const whenL = { fasting: "fasting", after: "2 h after a meal", random: "random" };
+    return `
+      <div class="note">
+        <strong>I'm not a doctor</strong>
+        <p class="small">These ranges are the standard adult guidelines, for tracking only. If a reading worries you, or you take medicine for blood pressure or sugar, talk to your doctor: doses often need to drop as you lose weight.</p>
+      </div>
+      <div class="grid2">
+        <div class="panel">
+          <h2>Add a reading</h2>
+          <div class="seg" role="group"><button data-rtype="bp" aria-pressed="${readType === "bp"}">Blood pressure</button><button data-rtype="sugar" aria-pressed="${readType === "sugar"}">Blood sugar</button></div>
+          ${readType === "bp" ? `
+            <div class="row">
+              <div class="field"><label for="bp-s">Top number (systolic)</label><input id="bp-s" type="number" min="60" max="260" inputmode="numeric" placeholder="120"></div>
+              <div class="field"><label for="bp-d">Bottom number (diastolic)</label><input id="bp-d" type="number" min="30" max="160" inputmode="numeric" placeholder="80"></div>
+              <div class="field"><label for="bp-p">Pulse (optional)</label><input id="bp-p" type="number" min="30" max="220" inputmode="numeric" placeholder="72"></div>
+            </div>
+            <p class="small muted">Sit quietly for 5 minutes first, feet flat, arm resting at heart height. Take 2 readings a minute apart and log the second.</p>` : `
+            <div class="row">
+              <div class="field"><label for="sg-v">Reading</label><input id="sg-v" type="number" min="1" max="600" step="0.1" inputmode="decimal" placeholder="5.4"></div>
+              <div class="field"><label for="sg-u">Unit</label><select id="sg-u"><option value="mmol">mmol/L</option><option value="mg">mg/dL</option></select></div>
+              <div class="field"><label for="sg-w">When</label><select id="sg-w"><option value="fasting">Fasting (8 h, no food)</option><option value="after">2 h after a meal</option><option value="random">Random</option></select></div>
+            </div>`}
+          <button class="btn primary" id="rd-add">Save reading</button>
+          <p class="small muted" id="rd-msg"></p>
+        </div>
+        <div class="panel">
+          <h2>Your readings</h2>
+          ${list.length ? `<ul class="readings">${list.slice(0, 30).map(r => {
+            const [label, tone] = r.type === "bp" ? bpClass(r.sys, r.dia) : sugarClass(r.mg, r.when);
+            const val = r.type === "bp" ? `${r.sys}/${r.dia} mmHg${r.pulse ? ` · pulse ${r.pulse}` : ""}` : `${fmtSugar(r)} · ${whenL[r.when]}`;
+            return `<li><span><b class="num">${val}</b><br><span class="small muted">${r.type === "bp" ? "Blood pressure" : "Blood sugar"} · ${fmtDate(r.d)}, ${fmt12(r.time)}</span><br><span class="chip ${tone}">${label}</span></span><button class="btn small" data-delrd="${r.id}">Remove</button></li>`;
+          }).join("")}</ul>` : `<p class="muted">No readings yet. A pharmacy can check your blood pressure for you, or get a home monitor. A sugar reading needs a glucometer or a lab test.</p>`}
+        </div>
+      </div>`;
+  }
+  function healthCheckups(c) {
     const p = state.profile;
     const [cls] = bmiClass(c.bmi);
     const labs = [
       ["bp", "Blood pressure", "Check at a pharmacy or clinic. Above 130/80 needs follow-up. Losing weight lowers it."],
-      ["hba1c", "HbA1c or fasting blood sugar", "Checks for prediabetes and type 2 diabetes, which are common at this weight."],
+      ["hba1c", "HbA1c or fasting blood sugar", "Checks for prediabetes and type 2 diabetes, which are common at a higher weight."],
       ["lipid", "Lipid profile", "Cholesterol and triglycerides. Fasting sample usually."],
       ["lft", "Liver function (ALT, AST) and ultrasound if advised", "Fatty liver is very common with belly fat and reverses with weight loss."],
       ["tsh", "Thyroid (TSH)", "An underactive thyroid can cause weight gain and tiredness."],
@@ -784,10 +1280,6 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
     const tone = score >= 5 ? "bad" : score >= 3 ? "" : "ok";
     const labsDone = labs.filter(([k]) => state.labs[k]).length;
     return `
-      <div class="note">
-        <strong>I'm not a doctor</strong>
-        <p class="small">This is general guidance based on standard medical advice for adults. Please see a real doctor once at the start: they can check things an app can't and adjust the plan if you have a condition or take medicine.</p>
-      </div>
       <div class="panel hero">
         <p class="label">Where you are now</p>
         <p class="hero-line">BMI <em>${r1(c.bmi)}</em> (${cls}). Losing just 5–10% (${r1(p.startWeight * 0.05)}–${r1(p.startWeight * 0.1)} kg) brings real health gains.</p>
@@ -810,26 +1302,72 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
           <h2>See a doctor before you start if</h2>
           <ul class="plain">
             <li>You have had chest pain, heart problems or fainting.</li>
-            <li>You have diabetes, high blood pressure or kidney disease, especially if you take medicine for them (doses may need to drop as you lose weight).</li>
+            <li>You have diabetes, high blood pressure or kidney disease, especially if you take medicine for them.</li>
             <li>You have a knee, hip or back injury that hurts during daily life.</li>
             <li>You get very short of breath climbing one flight of stairs.</li>
           </ul>
         </div>
         <div class="panel">
-          <h2>The other half of health</h2>
+          <h2>Get help now if you have</h2>
           <ul class="plain">
-            <li><b>Sleep 7–8 hours.</b> Short sleep raises appetite by hundreds of calories the next day.</li>
-            <li><b>Stress:</b> 5 minutes of slow breathing (in 4 s, out 6 s) or a walk beats stress-eating.</li>
-            <li><b>Smoking or vaping:</b> quitting is the single biggest health win there is.</li>
-            <li><b>Sitting:</b> stand up every hour. Long sitting is bad even if you exercise.</li>
-            <li><b>Mindset:</b> the scale goes up some days because of water and salt. Judge by the weekly trend, your waist and how your clothes fit.</li>
+            <li>Chest pain or pressure, or pain spreading to your arm, jaw or back.</li>
+            <li>Sudden weakness or numbness of the face, arm or leg, or trouble speaking.</li>
+            <li>A blood pressure reading above 180/120 with a headache or blurred vision.</li>
+            <li>Very high thirst and urination with confusion or vomiting.</li>
+          </ul>
+        </div>
+      </div>`;
+  }
+  function healthCalm() {
+    const ks = Array.from({ length: 7 }, (_, i) => addDays(today(), -i));
+    const sl = ks.map(k => state.days[k] && state.days[k].sleep).filter(v => typeof v === "number");
+    const md = ks.map(k => state.days[k] && state.days[k].mood).filter(v => typeof v === "number");
+    return `
+      <div class="grid2">
+        <div class="panel">
+          <h2>Calm breathing</h2>
+          <p class="small muted">Breathe in for 4 seconds, out for 6. Two minutes lowers your heart rate and takes the edge off stress and cravings.</p>
+          <button class="btn primary" id="open-breathe">Start 2-minute breathing</button>
+          <button class="btn" id="open-sos">Craving SOS</button>
+        </div>
+        <div class="panel">
+          <h2>Your last 7 days</h2>
+          <div class="stats">
+            <div class="stat"><span class="label">Avg sleep</span><b>${sl.length ? r1(avg(sl)) + " h" : "–"}</b><span class="sub">aim for 7–8 h</span></div>
+            <div class="stat"><span class="label">Avg mood</span><b>${md.length ? r1(avg(md)) + "/5" : "–"}</b><span class="sub">from your check-ins</span></div>
+          </div>
+          <p class="small muted">Log sleep and mood in the daily check-in on the Today tab.</p>
+        </div>
+        <div class="panel wide">
+          <h2>Sleep better</h2>
+          <ul class="plain">
+            <li><b>Same wake-up time every day,</b> weekends too. It's the strongest sleep fix there is.</li>
+            <li><b>Morning daylight</b> for 10 minutes sets your body clock.</li>
+            <li><b>No tea or coffee after 3 pm.</b> Caffeine lasts 6–8 hours.</li>
+            <li><b>Phone out of reach in bed.</b> Use an alarm clock if you can.</li>
+            <li><b>Cool, dark, quiet room.</b> A fan and an eye mask help.</li>
+            <li><b>Can't sleep after 20 minutes?</b> Get up, read in dim light, go back when sleepy.</li>
+            <li><b>Loud snoring or waking up gasping?</b> Do the sleep apnea check in Checkups.</li>
+          </ul>
+        </div>
+        <div class="panel wide">
+          <h2>Stress without food</h2>
+          <ul class="plain">
+            <li>Walk for 10 minutes, outside if you can.</li>
+            <li>Call or message a friend.</li>
+            <li>Write down what's bothering you and one small next step.</li>
+            <li>Smoking or vaping? Quitting is the single biggest health win there is. Ask your doctor about nicotine replacement.</li>
           </ul>
         </div>
       </div>`;
   }
 
-  let resetArmed = false;
+  // ---------- ME ----------
   function viewMe(c) {
+    return `${segBar("me", [["details", "Details"], ["tasks", "My tasks"], ["app", "App & backup"]])}
+      ${sub.me === "tasks" ? meTasks() : sub.me === "app" ? meApp() : meDetails(c)}`;
+  }
+  function meDetails(c) {
     const p = state.profile;
     const ft = Math.floor(p.heightCm / 30.48), inch = Math.round((p.heightCm / 2.54) - ft * 12);
     return `
@@ -858,19 +1396,58 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
         <div class="panel">
           <h2>How your numbers are worked out</h2>
           <div class="tbl-wrap"><table><tbody>
-            <tr><td>Resting burn (Mifflin-St Jeor)</td><td class="n">${Math.round(c.bmr).toLocaleString()} kcal</td></tr>
-            <tr><td>× activity ${p.activity}</td><td class="n">${Math.round(c.tdee).toLocaleString()} kcal</td></tr>
-            <tr><td>− 500 for steady fat loss</td><td class="n">${c.target.toLocaleString()} kcal</td></tr>
+            <tr><td>Resting burn (Mifflin-St Jeor)</td><td class="n">${kc(c.bmr)} kcal</td></tr>
+            <tr><td>× activity ${p.activity}</td><td class="n">${kc(c.tdee)} kcal</td></tr>
+            <tr><td>− 500 for steady fat loss</td><td class="n">${kc(c.target)} kcal</td></tr>
             <tr><td>Protein: 1.6 g × ${Math.round(Math.min(c.current, c.healthy + 5))} kg</td><td class="n">${c.protein} g</td></tr>
             <tr><td>Water: 30 ml per kg, up to 3 L</td><td class="n">${c.glasses} glasses</td></tr>
             <tr><td>Step goal for week ${c.week}</td><td class="n">${c.steps.toLocaleString()}</td></tr>
           </tbody></table></div>
         </div>
-        <div class="panel wide">
+      </div>`;
+  }
+  function meTasks() {
+    const mine = (state.custom || []).slice().sort((a, b) => a.time.localeCompare(b.time));
+    const on = !!(state.reminders && state.reminders.on);
+    return `
+      <div class="grid2">
+        <div class="panel">
+          <h2>My own tasks</h2>
+          <p class="small muted">Add anything you want on your daily checklist: medicine, vitamins, prayer, a stretch break. They get reminders too.</p>
+          ${mine.length ? `<ul class="entries">${mine.map(x => `<li class="entry"><span><span class="tm">${fmt12(x.time)}</span><br><b>${esc(x.t)}</b></span><button class="btn small" data-delc="${x.id}">Remove</button></li>`).join("")}</ul>` : `<p class="muted">No tasks of your own yet.</p>`}
+          <div class="row">
+            <div class="field" style="flex:0 1 130px"><label for="c-time">Time</label><input id="c-time" type="time" value="09:00"></div>
+            <div class="field" style="flex:1 1 200px"><label for="c-text">Task</label><input id="c-text" type="text" maxlength="60" placeholder="e.g. Take vitamin D"></div>
+            <button class="btn primary" id="c-add">Add task</button>
+          </div>
+        </div>
+        <div class="panel">
+          <h2>Reminders</h2>
+          <p class="small muted">While the app is open, a pop-up and a chime remind you of each task at its time.</p>
+          <button class="btn ${on ? "primary" : ""}" id="r-toggle">${on ? "Reminders on: tap to turn off" : "Turn on reminders"}</button>
+          <p class="small muted">For alarms when the app is closed, add your checklist to your phone calendar. Do it again after changing your wake-up time or tasks.</p>
+          <button class="btn" id="r-cal">Add reminders to my phone calendar</button>
+          <p class="small muted" id="r-msg"></p>
+        </div>
+      </div>`;
+  }
+  function meApp() {
+    const standalone = window.navigator.standalone === true || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+    return `
+      <div class="grid2">
+        ${standalone ? "" : `<div class="panel">
+          <h2>Install on your iPhone</h2>
+          <ol class="plain">
+            <li>Open <b>fmsami.github.io/health-coach</b> in <b>Safari</b>.</li>
+            <li>Tap the <b>Share</b> button, then <b>Add to Home Screen</b>, then <b>Add</b>.</li>
+            <li>Open <b>Body Reset</b> from your home screen. It runs full-screen and works offline.</li>
+          </ol>
+        </div>`}
+        <div class="panel ${standalone ? "wide" : ""}">
           <h2>Backup</h2>
-          <p class="small muted">Your data is saved in this browser${remoteRef ? " and synced to your Claude account" : ""}. Copy a backup now and then, and paste it here to restore it on another device.</p>
+          <p class="small muted">Your data is saved inside this app on this device${remoteRef ? " and synced to your Claude account" : ""}. Copy a backup every week or two and keep it in Notes. Paste it here to restore it on another device.</p>
           <div class="row"><button class="btn" id="b-copy">Copy backup</button><span class="small muted" id="b-msg"></span></div>
-          <div class="field"><label for="b-text">Paste a backup to restore</label><textarea id="b-text" rows="3" placeholder='{"v":1,...}'></textarea></div>
+          <div class="field"><label for="b-text">Paste a backup to restore</label><textarea id="b-text" rows="3" placeholder='{"v":2,...}'></textarea></div>
           <div class="row"><button class="btn" id="b-restore">Restore backup</button><button class="btn danger" id="b-reset">${resetArmed ? "Tap again to erase everything" : "Start over"}</button></div>
         </div>
       </div>`;
@@ -899,8 +1476,78 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
           <div class="field"><label for="w-wake">Wake-up time</label><input id="w-wake" type="time" value="${p.wake}"></div>
         </div>
         <div class="row"><button class="btn primary" id="w-start">Start my plan</button></div>
-        <p class="small muted" id="w-msg">Your details stay private to you. You can change them later in My details.</p>
+        <p class="small muted" id="w-msg">Your details stay private to you. You can change them later in Me.</p>
       </div>`;
+  }
+
+  // ---------- modal sheets: craving SOS and breathing ----------
+  const modal = document.getElementById("modal");
+  let modalTimer = null, sosEnd = 0, breathStart = 0;
+  function closeModal() { clearInterval(modalTimer); modalTimer = null; modal.hidden = true; modal.innerHTML = ""; }
+  function openSOS() {
+    sosEnd = 0;
+    modal.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sos-h">
+      <div class="sheet-head"><h2 id="sos-h">Craving SOS</h2><button class="btn small" data-close="1">Close</button></div>
+      <p class="small">Cravings rise and fall like a wave, usually within 10–15 minutes. Ride it out:</p>
+      <ol class="plain small">
+        <li><b>Hunger check:</b> would you eat a boiled egg or an apple right now? If yes, you're hungry: eat one. If no, it's a craving.</li>
+        <li>Drink a full glass of water.</li>
+        <li>Start the 10 minute timer and do something else: walk, shower, call someone, brush your teeth.</li>
+        <li>Still want it after 10 minutes? Have a small portion, slowly, sitting down, and enjoy it. Then move on.</li>
+      </ol>
+      <div class="bigtime" id="sos-time">10:00</div>
+      <button class="btn primary wide" id="sos-start">Start 10 minute timer</button>
+    </div>`;
+    modal.hidden = false;
+  }
+  function openBreathe() {
+    breathStart = Date.now();
+    modal.innerHTML = `<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="br-h">
+      <div class="sheet-head"><h2 id="br-h">Calm breathing</h2><button class="btn small" data-close="1">Close</button></div>
+      <div class="breath" aria-hidden="true"></div>
+      <p class="breath-cue" id="br-cue">Breathe in</p>
+      <p class="bigtime" id="br-time" style="font-size:1.6rem">2:00</p>
+      <p class="small muted" style="text-align:center">In through your nose for 4, out slowly through your mouth for 6. Follow the circle.</p>
+    </div>`;
+    modal.hidden = false;
+    clearInterval(modalTimer);
+    modalTimer = setInterval(() => {
+      const t = (Date.now() - breathStart) / 1000, left = Math.max(0, 120 - Math.floor(t));
+      const cue = document.getElementById("br-cue"), tm = document.getElementById("br-time");
+      if (!cue) return closeModal();
+      cue.textContent = left === 0 ? "Well done" : (t % 10) < 4 ? "Breathe in" : "Breathe out";
+      tm.textContent = `${Math.floor(left / 60)}:${pad(left % 60)}`;
+      if (left === 0) { clearInterval(modalTimer); chime(); }
+    }, 250);
+  }
+  modal.addEventListener("click", e => {
+    if (e.target === modal || e.target.closest("[data-close]")) return closeModal();
+    if (e.target.closest("#sos-start")) {
+      unlockAudio();
+      sosEnd = Date.now() + 10 * 60 * 1000;
+      e.target.closest("#sos-start").textContent = "Timer running. Go do something else.";
+      clearInterval(modalTimer);
+      modalTimer = setInterval(() => {
+        const el = document.getElementById("sos-time"); if (!el) return closeModal();
+        const left = Math.max(0, Math.ceil((sosEnd - Date.now()) / 1000));
+        el.textContent = `${Math.floor(left / 60)}:${pad(left % 60)}`;
+        if (!left) { clearInterval(modalTimer); el.textContent = "Done!"; chime(); }
+      }, 250);
+    }
+  });
+
+  // ---------- rest timer for guided workouts ----------
+  let restEnd = 0, restTimer = null;
+  function startRest(sec) { restEnd = Date.now() + sec * 1000; clearInterval(restTimer); restTimer = setInterval(updRest, 250); updRest(); }
+  function updRest() {
+    const bar = document.getElementById("restbar");
+    const left = Math.max(0, Math.ceil((restEnd - Date.now()) / 1000));
+    if (bar) {
+      bar.hidden = !restEnd;
+      document.getElementById("rest-label").textContent = left ? "Rest" : "Go! Next set";
+      document.getElementById("rest-time").textContent = `${Math.floor(left / 60)}:${pad(left % 60)}`;
+    }
+    if (!left && restTimer) { clearInterval(restTimer); restTimer = null; chime(); setTimeout(() => { restEnd = 0; updRest(); }, 4000); }
   }
 
   // ---------- render ----------
@@ -914,6 +1561,7 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
     document.querySelectorAll("#tabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === tab)));
     const v = { today: viewToday, train: viewTrain, food: viewFood, progress: viewProgress, health: viewHealth, me: viewMe }[tab] || viewToday;
     app.innerHTML = `<section class="view" role="tabpanel" aria-labelledby="tab-${tab}">${v(c)}</section>`;
+    if (restEnd) updRest();
   }
 
   // ---------- events ----------
@@ -923,19 +1571,24 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
     try { localStorage.setItem(LS_KEY + ":tab", tab); } catch (err) {}
     render(); window.scrollTo({ top: 0 });
   });
-  const num = v => { const n = parseFloat(v); return Number.isFinite(n) ? n : null; };
+
+  app.addEventListener("input", e => {
+    if (e.target.id === "f-q") { foodQuery = e.target.value; const r = document.getElementById("f-res"); if (r) r.innerHTML = foodResults(); }
+  });
 
   app.addEventListener("change", e => {
     const t = e.target, d = day(today()), p = state.profile;
     if (t.dataset.habit) { d.h = d.h || {}; d.h[t.dataset.habit] = t.checked; return save(); }
     if (t.dataset.lab) { state.labs[t.dataset.lab] = t.checked; return save(); }
     if (t.dataset.sb) { state.sleep = state.sleep || {}; state.sleep[t.dataset.sb] = t.checked; return save(); }
+    if (t.dataset.groc) { const g = state.grocery.find(x => x.id === t.dataset.groc); if (g) g.done = t.checked; return save(); }
     switch (t.id) {
       case "in-steps": { const n = num(t.value); if (n === null) delete d.steps; else d.steps = Math.max(0, Math.round(n)); if (n !== null && n >= calc().steps) { d.h = d.h || {}; d.h.steps = true; } return save(); }
       case "in-weight": { const n = num(t.value); if (n === null) delete d.weight; else if (n >= 30 && n <= 300) d.weight = r1(n); return save(); }
       case "in-waist": { const n = num(t.value); if (n === null) delete d.waist; else d.waist = r1(n); return save(); }
+      case "in-sleep": { const n = num(t.value); if (n === null) delete d.sleep; else if (n >= 0 && n <= 16) d.sleep = n; return save(); }
       case "p-name": p.name = t.value.trim(); return save();
-      case "p-age": { const n = num(t.value); if (n && n >= 14 && n <= 90) { p.age = Math.round(n); p.confirmed = true; } return save(); }
+      case "p-age": { const n = num(t.value); if (n && n >= 14 && n <= 90) p.age = Math.round(n); return save(); }
       case "p-sex": p.sex = t.value; return save();
       case "p-ft": case "p-in": {
         const ft = num(document.getElementById("p-ft").value) || 0, inch = num(document.getElementById("p-in").value) || 0;
@@ -950,15 +1603,100 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
 
   app.addEventListener("click", e => {
     const t = e.target.closest("button"); if (!t) return;
-    const d = day(today()), p = state.profile;
+    const tk = today(), d = day(tk), p = state.profile;
+    const tickTrain = () => { d.h = d.h || {}; d.h.train = true; };
+    if (t.dataset.sub) { const [k, v] = t.dataset.sub.split(":"); sub[k] = v; return render(); }
     if (t.dataset.water) {
       const n = Number(t.dataset.water); d.water = d.water === n ? n - 1 : n;
       if (d.water >= calc().glasses) { d.h = d.h || {}; d.h.water = true; }
       return save();
     }
+    if (t.dataset.mood) { d.mood = Number(t.dataset.mood); return save(); }
+    if (t.dataset.energy) { d.energy = Number(t.dataset.energy); return save(); }
     if (t.dataset.delw) { delete state.days[t.dataset.delw].weight; return save(); }
     if (t.dataset.done) { d.h = d.h || {}; d.h[t.dataset.done] = true; return save(); }
+    // food
+    if (t.dataset.meal) { foodMeal = t.dataset.meal; return render(); }
+    if (t.dataset.addfood) {
+      const f = (state.myFoods || []).concat(FOODS).find(x => x.id === t.dataset.addfood); if (!f) return;
+      d.food = d.food || [];
+      d.food.push({ id: uid(), meal: foodMeal, n: f.n, u: f.u, kcal: f.kcal, p: f.p, qty: 1 });
+      return save();
+    }
+    if (t.dataset.fq) {
+      const [id, delta] = t.dataset.fq.split(":"); const e2 = (d.food || []).find(x => x.id === id); if (!e2) return;
+      e2.qty = Math.round((e2.qty + Number(delta)) * 10) / 10;
+      if (e2.qty <= 0) d.food = d.food.filter(x => x.id !== id);
+      return save();
+    }
+    // workouts
+    if (t.dataset.startwo) { unlockAudio(); state.session = { kind: t.dataset.startwo, start: Date.now(), startHM: nowHM(), done: {} }; sub.train = "today"; return save(); }
+    if (t.dataset.set) {
+      unlockAudio();
+      const [i, n] = t.dataset.set.split(":").map(Number), s = state.session; if (!s) return;
+      s.done[i] = (s.done[i] || 0) === n ? n - 1 : n;
+      if (s.done[i] === n) startRest(PHASES[calc().phase - 1].rest);
+      return save();
+    }
+    if (t.dataset.delwo) { state.workouts = state.workouts.filter(x => x.id !== t.dataset.delwo); return save(); }
+    if (t.dataset.rtype) { readType = t.dataset.rtype; return render(); }
+    if (t.dataset.delrd) { state.readings = state.readings.filter(x => x.id !== t.dataset.delrd); return save(); }
+    if (t.dataset.delc) { state.custom = state.custom.filter(x => x.id !== t.dataset.delc); return save(); }
     switch (t.id) {
+      case "open-sos": return openSOS();
+      case "open-breathe": return openBreathe();
+      case "rest-skip": restEnd = Date.now(); return updRest();
+      case "wo-finish": {
+        const s = state.session; if (!s) return;
+        const ph = PHASES[calc().phase - 1];
+        const sets = Object.values(s.done).reduce((a, b) => a + b, 0);
+        state.workouts.push({ id: uid(), d: tk, at: nowHM(), kind: s.kind, mins: Math.max(1, Math.round((Date.now() - s.start) / 60000)), sets, of: EX[s.kind].length * ph.setsN });
+        state.session = null; restEnd = 0; clearInterval(restTimer); tickTrain(); return save();
+      }
+      case "wo-cancel": state.session = null; restEnd = 0; clearInterval(restTimer); return save();
+      case "wo-stretch": state.workouts.push({ id: uid(), d: tk, at: nowHM(), kind: "stretch", mins: 10 }); tickTrain(); return save();
+      case "wk-log": {
+        const m = num(document.getElementById("wk-min").value); if (!m || m < 1) return;
+        state.workouts.push({ id: uid(), d: tk, at: nowHM(), kind: document.getElementById("wk-kind").value, mins: Math.round(m) });
+        if (WEEK[new Date().getDay()].kind === "walk") tickTrain();
+        return save();
+      }
+      case "f-add": {
+        const name = document.getElementById("f-name").value.trim(), k = num(document.getElementById("f-kcal").value), pr = num(document.getElementById("f-p").value) || 0;
+        const msg = document.getElementById("f-msg");
+        if (!name || k === null) { msg.textContent = "Enter a name and the calories."; return; }
+        const f = { id: "my" + uid(), n: name, u: "1 portion", kcal: Math.round(k), p: r1(pr) };
+        if (document.getElementById("f-save").checked) state.myFoods.push(f);
+        d.food = d.food || []; d.food.push({ id: uid(), meal: foodMeal, n: f.n, u: f.u, kcal: f.kcal, p: f.p, qty: 1 });
+        return save();
+      }
+      case "f-copy": {
+        const y = (state.days[addDays(tk, -1)] || {}).food || [];
+        d.food = y.map(x => ({ ...x, id: uid() })); return save();
+      }
+      case "g-add": { const v = document.getElementById("g-new").value.trim(); if (v) { state.grocery.push({ id: "g" + uid(), t: v, done: false }); return save(); } return; }
+      case "g-clear": state.grocery.forEach(x => { x.done = false; }); return save();
+      case "g-remove": state.grocery = state.grocery.filter(x => !x.done); return save();
+      case "rd-add": {
+        const msg = document.getElementById("rd-msg");
+        if (readType === "bp") {
+          const s = num(document.getElementById("bp-s").value), di = num(document.getElementById("bp-d").value), pu = num(document.getElementById("bp-p").value);
+          if (!s || !di || s < 60 || s > 260 || di < 30 || di > 160) { msg.textContent = "Enter both numbers, for example 128 and 84."; return; }
+          state.readings.push({ id: uid(), d: tk, time: nowHM(), type: "bp", sys: Math.round(s), dia: Math.round(di), pulse: pu ? Math.round(pu) : null });
+        } else {
+          const v = num(document.getElementById("sg-v").value), unit = document.getElementById("sg-u").value;
+          if (!v) { msg.textContent = "Enter your reading."; return; }
+          const mg = unit === "mmol" ? v * 18 : v;
+          if (mg < 20 || mg > 600) { msg.textContent = unit === "mmol" ? "That looks off. mmol/L readings are usually between 3 and 20." : "That looks off. mg/dL readings are usually between 60 and 400."; return; }
+          state.readings.push({ id: uid(), d: tk, time: nowHM(), type: "sugar", mg, unit, when: document.getElementById("sg-w").value });
+        }
+        return save();
+      }
+      case "c-add": {
+        const time = document.getElementById("c-time").value, text = document.getElementById("c-text").value.trim();
+        if (time && text) { state.custom.push({ id: uid(), time, t: text }); return save(); }
+        return;
+      }
       case "r-toggle": {
         const on = !(state.reminders && state.reminders.on);
         state.reminders = { on };
@@ -982,7 +1720,7 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
           msg.textContent = /iPhone|iPad/.test(navigator.userAgent)
             ? "If your calendar didn't open, go to Files → Downloads and tap body-reset-reminders.ics, then Add All."
             : "Saved body-reset-reminders.ics. Open it to add the daily reminders to your calendar. For Google Calendar: calendar.google.com → Settings → Import.";
-        } catch (err) { msg.textContent = "This browser couldn't save the file. Try Chrome or Edge."; }
+        } catch (err) { msg.textContent = "This browser couldn't save the file. Try Safari, Chrome or Edge."; }
         return;
       }
       case "w-start": {
@@ -994,7 +1732,7 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
         if (cm < 120 || cm > 230) { msg.textContent = "Enter your height in feet and inches, for example 5 and 9."; return; }
         if (!kg || kg < 30 || kg > 300) { msg.textContent = "Enter your weight in kg, for example 85."; return; }
         Object.assign(p, { name: val("w-name").trim(), age: Math.round(age), sex: val("w-sex"), heightCm: r1(cm), startWeight: r1(kg), activity: Number(val("w-act")), wake: val("w-wake") || "07:00", confirmed: true });
-        if (!weights().length) { p.startDate = today(); day(today()).weight = r1(kg); }
+        if (!weights().length) { p.startDate = tk; day(tk).weight = r1(kg); }
         tab = "today";
         return save();
       }
@@ -1006,20 +1744,21 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
       case "b-copy": {
         const msg = document.getElementById("b-msg"), txt = JSON.stringify(state);
         const fallback = () => { const ta = document.getElementById("b-text"); ta.value = txt; ta.select(); msg.textContent = "Selected in the box below. Copy it with Ctrl+C or long-press."; };
-        try { navigator.clipboard.writeText(txt).then(() => { msg.textContent = "Backup copied. Paste it into a note or message to yourself."; }, fallback); } catch (err) { fallback(); }
+        try { navigator.clipboard.writeText(txt).then(() => { msg.textContent = "Backup copied. Paste it into Notes or a message to yourself."; }, fallback); } catch (err) { fallback(); }
         return;
       }
       case "b-restore": {
+        const m = document.getElementById("b-msg");
         try {
           const s = JSON.parse(document.getElementById("b-text").value);
           if (!s || !s.profile || !s.days) throw new Error();
-          state = s; save(); document.getElementById("b-msg") && (document.getElementById("b-msg").textContent = "Backup restored.");
-        } catch (err) { const m = document.getElementById("b-msg"); if (m) m.textContent = "That doesn't look like a backup from this app. Copy the whole text and try again."; }
+          state = ensure(s); save();
+        } catch (err) { if (m) m.textContent = "That doesn't look like a backup from this app. Copy the whole text and try again."; }
         return;
       }
       case "b-reset": {
         if (!resetArmed) { resetArmed = true; return render(); }
-        resetArmed = false; state = defaultState(); state.updatedAt = 1; tab = "today"; return save();
+        resetArmed = false; state = defaultState(); tab = "today"; return save();
       }
     }
   });
@@ -1070,7 +1809,7 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
 
   function tick() {
     const rel = relNow();
-    if (state.reminders && state.reminders.on && lastRel !== null && rel !== lastRel) {
+    if (state.profile.confirmed && state.reminders && state.reminders.on && lastRel !== null && rel !== lastRel) {
       const d = day(today()), H = checklist(calc());
       const crossed = at => lastRel < rel ? (at > lastRel && at <= rel) : (at > lastRel || at <= rel);
       const due = H.filter(it => !(d.h && d.h[it.id]) && crossed(it.at));
@@ -1084,7 +1823,7 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
     }
     const changed = rel !== lastRel;
     lastRel = rel;
-    if (changed && tab === "today" && !app.contains(document.activeElement)) render();
+    if (changed && tab === "today" && modal.hidden && !app.contains(document.activeElement)) render();
   }
 
   render();
