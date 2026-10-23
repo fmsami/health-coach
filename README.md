@@ -16,17 +16,21 @@ The first time you open it, it asks for your age, height, weight, activity and w
 
 **Train**
 - Guided workouts: tap each set as you finish it, and a rest timer starts on its own.
+- A "Watch how it's done" YouTube link on every exercise and stretch.
 - A 12-week low-impact home program in three phases, with easier and harder versions of every exercise.
 - Walk and cardio log, workout history and weekly totals.
 
 **Food**
 - Food diary with 60+ Bangladeshi and everyday foods, your own saved foods, and calories and protein against your target.
+- 7-day meal plan (about 1,800–1,950 kcal a day) with one-tap logging and a button that adds the week's food to your shopping list.
 - Guide: targets (Mifflin-St Jeor, 500 kcal deficit), the plate method, a sample day and easy swaps.
 - Six simple healthy deshi recipes and a shopping list.
 
 **Progress**
 - Weight chart with a 7-day average and the planned path.
-- Weekly report with "Coach says" advice, 17 badges, milestones with estimated dates, an 8-week habit heatmap, waist tracking and a weigh-in log.
+- Weekly report with "Coach says" advice, 19 badges, milestones with estimated dates, an 8-week habit heatmap and a weigh-in log.
+- Body: waist, neck, hips, chest, arm and thigh measurements with a body fat % estimate (US Navy tape method), fat and lean mass, and history.
+- Photos: weekly front, side and back progress photos with a before-and-now comparison. Photos stay on the phone and are never uploaded.
 
 **Health**
 - Blood pressure and blood sugar log (mmol/L or mg/dL) with standard ranges.

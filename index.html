@@ -197,6 +197,23 @@ section.view { display: grid; gap: 20px; }
 .ex-top h3 { font-size: 1rem; }
 .dose { font-family: var(--font-num); font-size: .85rem; background: var(--sunk); border-radius: 6px; padding: 2px 8px; white-space: nowrap; }
 .ex .alt { font-size: .85rem; color: var(--muted); }
+a.watch { color: var(--accent); font-weight: 700; font-size: .88rem; text-underline-offset: 3px; justify-self: start; }
+
+/* Meal plan */
+.planmeal { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 6px; }
+.planmeal ul { margin: 0; padding-left: 1.1em; display: grid; gap: 2px; font-size: .92rem; }
+
+/* Body measurements */
+.mgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; }
+
+/* Progress photos */
+.compare { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.compare figure, .thumbs figure { margin: 0; display: grid; gap: 4px; min-width: 0; }
+.compare img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius: 12px; background: var(--sunk); max-width: 100%; }
+.compare figcaption, .thumbs figcaption { font-size: .8rem; color: var(--muted); }
+.thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 10px; }
+.thumbs img { width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius: 10px; background: var(--sunk); max-width: 100%; }
+.photo-empty { aspect-ratio: 3 / 4; border-radius: 12px; background: var(--sunk); display: grid; place-content: center; text-align: center; padding: 10px; font-size: .85rem; color: var(--muted); }
 .sets { display: flex; gap: 8px; flex-wrap: wrap; }
 .set { width: 44px; height: 44px; border-radius: 50%; border: 2px solid var(--line); background: var(--surface); font-family: var(--font-num); font-weight: 600; }
 .set.done { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
@@ -371,8 +388,9 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
   let tab = "today";
   try { tab = localStorage.getItem(LS_KEY + ":tab") || "today"; } catch (e) {}
   if (location.hash && document.getElementById("tab-" + location.hash.slice(1))) tab = location.hash.slice(1);
-  const sub = { train: "today", food: "log", health: "readings", me: "details" };
-  let foodQuery = "", foodMeal = defaultMeal(), readType = "bp", resetArmed = false;
+  const sub = { train: "today", food: "log", progress: "overview", health: "readings", me: "details" };
+  let foodQuery = "", foodMeal = defaultMeal(), readType = "bp", resetArmed = false, planDay = new Date().getDay();
+  let phPose = "front", cmpA = null, cmpB = null, delPhoto = null;
 
   function save() {
     state.updatedAt = Date.now();
@@ -474,6 +492,16 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
       { n: "Bird dog", d: "On hands and knees, reach opposite arm and leg out long, hold 3 seconds, switch sides. Keep your hips level.", easy: "Arm only or leg only.", hard: "Longer holds." }
     ]
   };
+  // YouTube searches for a short demo of each exercise
+  const YT = {
+    "Sit-to-stand (chair squat)": "chair sit to stand exercise beginner", "Wall or counter push-up": "wall push up beginner form",
+    "Glute bridge": "glute bridge exercise beginner form", "Bent-over row (backpack or bottles)": "single arm row with chair support beginner",
+    "Dead bug": "dead bug exercise beginner form", "Farmer carry": "farmers carry exercise form",
+    "Step-up": "step up exercise beginner stairs", "Incline push-up (table)": "incline push up beginner form",
+    "Hip hinge (good morning)": "bodyweight good morning hip hinge form", "Towel or band pull-apart": "band pull apart exercise form",
+    "Side plank on knees": "modified side plank on knees", "Bird dog": "bird dog exercise form"
+  };
+  const ytLink = q => `https://www.youtube.com/results?search_query=${encodeURIComponent(q)}`;
   const STRETCHES = ["Calf stretch against a wall", "Hip flexor lunge stretch", "Hamstring stretch with your heel on a step", "Chest stretch in a doorway", "Child's pose", "Slow neck rolls"];
   // weekday 0=Sunday
   const WEEK = [
@@ -526,6 +554,36 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
     { n: "Chana chaat (no frying)", kcal: 280, p: 14, ing: ["1 cup boiled chana", "Onion, tomato, cucumber, green chilli, coriander", "Lemon juice, chaat masala, salt"], steps: ["Mix everything in a bowl.", "Squeeze plenty of lemon. A filling snack or light dinner."] },
     { n: "Overnight oats with doi", kcal: 330, p: 18, ing: ["½ cup oats", "½ cup plain doi + ½ cup milk", "½ banana or apple, pinch of cinnamon", "1 tbsp chopped nuts"], steps: ["Mix oats, doi and milk in a jar, close and leave in the fridge overnight.", "In the morning add fruit, nuts and cinnamon. Breakfast in zero minutes."] }
   ];
+
+  // 7-day meal plan, index = weekday (0 = Sunday); each item is [food name from FOODS, quantity]
+  const R = "Rice, cooked", BR = "Brown rice, cooked", RT = "Atta roti, no ghee", EB = "Egg, boiled", OM = "Omelette, 2 eggs", CC = "Chicken curry",
+    GC = "Grilled chicken breast", FC = "Fish curry (rui, katla)", DAL = "Masoor dal", VEG = "Mixed vegetable sabzi", SHAK = "Shak (leafy greens), cooked",
+    SAL = "Salad (cucumber, tomato, onion)", DOI = "Plain doi (yogurt)", TEA = "Tea with milk, no sugar";
+  const PLAN = [
+    { name: "Sunday", breakfast: [[EB, 2], [RT, 1], ["Banana", 1]], lunch: [[R, 1], [CC, 1.5], [SHAK, 1], [DAL, 1]], snack: [[DOI, 1], ["Papaya", 1]], dinner: [["Soy chunks, cooked", 1], [VEG, 1], [RT, 2], [SAL, 1]] },
+    { name: "Monday", breakfast: [[OM, 1], [RT, 1], [EB, 1], [TEA, 1]], lunch: [[R, 1], [FC, 1], [SHAK, 1], [DAL, 1], [SAL, 1]], snack: [["Guava", 1], [DOI, 1]], dinner: [[RT, 2], [CC, 1.5], [VEG, 1], [SAL, 1]] },
+    { name: "Tuesday", breakfast: [["Oats with water", 1], ["Milk", 1], [EB, 2]], lunch: [[BR, 1], [CC, 1.5], [VEG, 1], [SAL, 1]], snack: [["Roasted chana", 1], ["Apple", 1]], dinner: [[RT, 2], [DAL, 1], ["Egg curry", 1], [SHAK, 1]] },
+    { name: "Wednesday", breakfast: [[EB, 2], [RT, 2], [VEG, 1], [TEA, 1]], lunch: [[R, 1], [FC, 1.5], [DAL, 1], [SAL, 1]], snack: [[DOI, 1], ["Papaya", 1]], dinner: [[GC, 1.5], [VEG, 1], [RT, 1], [SAL, 1]] },
+    { name: "Thursday", breakfast: [["Chira (flattened rice), cooked", 1], [EB, 2], [TEA, 1]], lunch: [["Khichuri", 1], [EB, 1], [SAL, 1]], snack: [["Orange", 1], ["Peanuts", 1]], dinner: [[RT, 2], [FC, 1.5], [SHAK, 1], [DAL, 1]] },
+    { name: "Friday", breakfast: [[OM, 1], [RT, 1], [DOI, 1]], lunch: [[R, 1], ["Beef curry", 1], [VEG, 1], [SAL, 1], [DAL, 1]], snack: [["Guava", 1], ["Roasted chana", 1]], dinner: [[GC, 1], [SHAK, 1], [RT, 1], [SAL, 1]] },
+    { name: "Saturday", breakfast: [["Oats with water", 1], [DOI, 1], ["Apple", 1]], lunch: [[BR, 1], ["Chana curry", 1], [FC, 1], [SAL, 1]], snack: [[EB, 1], [TEA, 1]], dinner: [[RT, 2], [CC, 1.5], [VEG, 1]] }
+  ];
+  const foodByName = n => FOODS.find(f => f.n === n);
+  const mealTotals = items => items.reduce((s, [n, q]) => { const f = foodByName(n); return { kcal: s.kcal + f.kcal * q, p: s.p + f.p * q }; }, { kcal: 0, p: 0 });
+  // what to buy for each food in the plan: [word to look for in the list, item to add]
+  const SHOP_FOR = {
+    [EB]: "egg", [OM]: "egg", "Egg curry": "egg", [CC]: "chicken", [GC]: "chicken", [FC]: "fish", "Beef curry": "beef", [DAL]: "masoor",
+    "Chana curry": "chickpea", "Roasted chana": "roasted chana", [DOI]: "doi", "Milk": "milk", [TEA]: "milk", "Oats with water": "oats", [RT]: "atta",
+    [BR]: "brown", [R]: "rice", "Khichuri": "moong", "Chira (flattened rice), cooked": "chira", [VEG]: "lau", [SHAK]: "shak", [SAL]: "cucumber",
+    "Banana": "guava", "Apple": "guava", "Guava": "guava", "Orange": "guava", "Papaya": "guava", "Peanuts": "peanut", "Soy chunks, cooked": "soy"
+  };
+  const SHOP_ITEM = {
+    egg: "Eggs (2 dozen)", chicken: "Chicken (about 1.5 kg)", fish: "Fish: rui, tilapia or pangas (about 1 kg)", beef: "Lean beef (300 g)",
+    masoor: "Masoor dal", chickpea: "Chana (chickpeas)", "roasted chana": "Roasted chana", doi: "Plain doi (yogurt)", milk: "Milk", oats: "Oats",
+    atta: "Atta for roti", brown: "Brown or parboiled rice", rice: "Rice", moong: "Moong dal (for khichuri)", chira: "Chira (flattened rice)",
+    lau: "Lau, begun, cauliflower, cabbage", shak: "Shak (spinach, lal shak)", cucumber: "Cucumber, tomato, onion, lemon",
+    guava: "Fruit: guava, apple, banana, orange, papaya", peanut: "Peanuts", soy: "Soy chunks"
+  };
 
   const TIPS = [
     "Drink a glass of water before every meal. You'll eat less without trying.",
@@ -759,6 +817,7 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
         <div class="ex-top"><h3>${i + 1}. ${e.n}</h3><span class="dose">${doseOf(e, ph)}</span></div>
         <p class="small">${e.d}</p>
         <p class="alt">Easier: ${e.easy} · Harder: ${e.hard}</p>
+        <a class="watch" href="${ytLink(YT[e.n] || e.n)}" target="_blank" rel="noopener">Watch how it's done (YouTube)</a>
         ${s ? `<div class="sets">${Array.from({ length: n }, (_, j) => `<button class="set ${j < done ? "done" : ""}" data-set="${i}:${j + 1}" aria-label="Set ${j + 1}">${j + 1}</button>`).join("")}</div>` : ""}
       </div>`;
   }
@@ -810,7 +869,7 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
         <div class="panel">
           <div class="panel-head"><h2>Today: ${w.title}</h2><span class="pill">Phase ${c.phase}</span></div>
           <p class="small muted">Hold each stretch for 30 seconds, no bouncing.</p>
-          <ol class="plain">${STRETCHES.map(x => `<li>${x}</li>`).join("")}</ol>
+          <ol class="plain">${STRETCHES.map(x => `<li>${x} <a class="watch" href="${ytLink(x + " how to")}" target="_blank" rel="noopener">watch</a></li>`).join("")}</ol>
           <button class="btn primary" id="wo-stretch">I stretched today</button>
         </div>`;
     }
@@ -867,8 +926,39 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
 
   // ---------- FOOD ----------
   function viewFood(c) {
-    return `${segBar("food", [["log", "Diary"], ["guide", "Guide"], ["recipes", "Recipes"], ["shop", "Shopping"]])}
-      ${sub.food === "guide" ? foodGuide(c) : sub.food === "recipes" ? foodRecipes() : sub.food === "shop" ? foodShop() : foodLog(c)}`;
+    return `${segBar("food", [["log", "Diary"], ["plan", "Meal plan"], ["guide", "Guide"], ["recipes", "Recipes"], ["shop", "Shop"]])}
+      ${sub.food === "plan" ? foodPlan(c) : sub.food === "guide" ? foodGuide(c) : sub.food === "recipes" ? foodRecipes() : sub.food === "shop" ? foodShop() : foodLog(c)}`;
+  }
+  function foodPlan(c) {
+    const P = PLAN[planDay];
+    const days = [1, 2, 3, 4, 5, 6, 0];
+    const tot = MEALS.reduce((s, [m]) => { const t = mealTotals(P[m]); return { kcal: s.kcal + t.kcal, p: s.p + t.p }; }, { kcal: 0, p: 0 });
+    const diff = c.target - tot.kcal;
+    const isToday = planDay === new Date().getDay();
+    return `
+      <div class="panel hero">
+        <p class="label">7-day meal plan</p>
+        <p class="hero-line">${P.name}: about <em>${kc(tot.kcal)} kcal</em> and ${Math.round(tot.p)} g protein.</p>
+        <div class="seg" role="group">${days.map(i => `<button data-planday="${i}" aria-pressed="${planDay === i}">${PLAN[i].name.slice(0, 3)}</button>`).join("")}</div>
+        <p class="small muted">${diff < -120 ? `That's above your ${kc(c.target)} kcal target: have one roti less at dinner, or half a cup of rice at lunch.` : diff > 150 ? `That's under your ${kc(c.target)} kcal target: add a glass of milk or a fruit and a boiled egg.` : `That fits your ${kc(c.target)} kcal target.`} Protein short of ${c.protein} g? Add an egg, a cup of doi or a scoop of whey.</p>
+      </div>
+      <div class="grid2">
+        ${MEALS.map(([m, l]) => {
+          const t = mealTotals(P[m]);
+          return `<div class="planmeal">
+            <div class="panel-head"><h3>${l}</h3><span class="num small muted">${kc(t.kcal)} kcal · ${Math.round(t.p)} g</span></div>
+            <ul>${P[m].map(([n, q]) => `<li>${q === 1 ? "" : q + " × "}${esc(n)} <span class="muted small">(${esc(foodByName(n).u)})</span></li>`).join("")}</ul>
+            <button class="btn small" data-logmeal="${m}">${isToday ? "I ate this: add to my diary" : "Add to today's diary"}</button>
+          </div>`;
+        }).join("")}
+      </div>
+      <div class="panel">
+        <h2>Shop for the week</h2>
+        <p class="small muted">Adds everything this plan uses to your shopping list. Items you already have on the list are unticked so you remember to buy them again.</p>
+        <button class="btn primary" id="plan-shop">Add this week's food to my shopping list</button>
+        <p class="small muted" id="plan-msg"></p>
+      </div>
+      <p class="small muted">Swap freely: fish for chicken, roti for a fist of rice, any fruit for another. Cook with about 1 tbsp of oil per person per meal.</p>`;
   }
   function foodResults() {
     const q = foodQuery.trim().toLowerCase();
@@ -1069,10 +1159,16 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
       ["10%", "10% down", `Reach ${r1(start * 0.9)} kg`, c.current <= start * 0.9 && ws.length > 1],
       ["<30", "Out of obesity range", "BMI under 30", c.bmi < 30 && ws.length > 1],
       ["−5", "Belt notch", "Waist down 5 cm", waistDrop >= 5],
-      ["Dr", "Checked up", "Tick all 8 checkups in Health", labsDone >= 8]
+      ["Dr", "Checked up", "Tick all 8 checkups in Health", labsDone >= 8],
+      ["%", "Measured up", "Log waist and neck in Progress → Body", bodyFat(today()) !== null],
+      ["Pic", "Snapshot", "Add a progress photo", photos.length > 0]
     ].map(([m, t, how, got]) => ({ m, t, how, got }));
   }
   function viewProgress(c) {
+    return `${segBar("progress", [["overview", "Overview"], ["body", "Body"], ["photos", "Photos"]])}
+      ${sub.progress === "body" ? progBody(c) : sub.progress === "photos" ? progPhotos(c) : progOverview(c)}`;
+  }
+  function progOverview(c) {
     const p = state.profile, ws = c.ws, h2 = c.h * c.h;
     const start = p.startWeight;
     const lost = r1(start - c.current);
@@ -1095,9 +1191,6 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
     }).join("");
     const recent = ws.slice().reverse().slice(0, 14);
     const thisW = weekStats(today(), ids), lastW = weekStats(addDays(today(), -7), ids);
-    const waists = Object.keys(state.days).filter(k => typeof state.days[k].waist === "number").sort().map(k => ({ k, v: state.days[k].waist }));
-    const waistNow = waists.length ? waists[waists.length - 1].v : null;
-    const whtr = waistNow ? waistNow / p.heightCm : null;
     const B = badges(c, st);
     const fmtD = (a, b, unit, dec = 1) => a === null ? "–" : `${dec ? r1(a) : kc(a)}${unit}${b !== null && a !== null ? ` <span class="sub">(${a - b > 0 ? "+" : ""}${dec ? r1(a - b) : kc(a - b)})</span>` : ""}`;
     const nextMile = miles.find(m => c.current > m[0]);
@@ -1146,14 +1239,7 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
           <div class="heat">${heat}</div>
           <p class="small muted">Darker means more of your daily checklist ticked. Aim to fill most squares, not every one.</p>
         </div>
-        <div class="panel">
-          <h2>Waist</h2>
-          ${waistNow ? `<div class="stats">
-            <div class="stat"><span class="label">Now</span><b>${r1(waistNow)} cm</b><span class="sub">${waists.length > 1 ? (waists[0].v - waistNow >= 0 ? "−" : "+") + r1(Math.abs(waists[0].v - waistNow)) + " cm since " + fmtDate(waists[0].k) : "first measurement"}</span></div>
-            <div class="stat"><span class="label">Waist ÷ height</span><b>${whtr.toFixed(2)}</b><span class="sub">${whtr < 0.5 ? "healthy, under 0.5" : "aim for under 0.5"}</span></div>
-          </div>` : `<p class="muted">Measure your waist at the belly button once a week and add it with your weigh-in on the Today tab. It often drops when the scale doesn't.</p>`}
-        </div>
-        <div class="panel">
+        <div class="panel wide">
           <h2>Weigh-in log</h2>
           ${recent.length ? `<div class="tbl-wrap"><table><thead><tr><th>Date</th><th>Weight</th><th>Waist</th><th></th></tr></thead><tbody>
             ${recent.map(e => `<tr><td>${fmtDate(e.k)}</td><td class="n">${r1(e.w)} kg</td><td class="n">${state.days[e.k].waist ? state.days[e.k].waist + " cm" : "–"}</td><td><button class="btn small" data-delw="${e.k}">Remove</button></td></tr>`).join("")}
@@ -1166,6 +1252,179 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
         </div>
       </div>`;
   }
+  // ---------- body measurements and body fat ----------
+  const MEAS = [
+    ["waist", "Waist", "At your belly button, relaxed. Don't suck in."], ["neck", "Neck", "Just below the Adam's apple, tape level."],
+    ["hip", "Hips", "Around the widest part of your bum."], ["chest", "Chest", "Across the nipples, after breathing out."],
+    ["arm", "Upper arm", "Halfway between shoulder and elbow, arm relaxed."], ["thigh", "Thigh", "Around the widest part of one thigh."]
+  ];
+  const mval = (k, f) => { const d = state.days[k]; if (!d) return null; const v = f === "waist" ? d.waist : d.m && d.m[f]; return typeof v === "number" ? v : null; };
+  const measDates = () => Object.keys(state.days).filter(k => MEAS.some(([f]) => mval(k, f) !== null)).sort();
+  function latestUpTo(f, k) {
+    const ks = Object.keys(state.days).filter(x => x <= k && mval(x, f) !== null).sort();
+    return ks.length ? mval(ks[ks.length - 1], f) : null;
+  }
+  function weightUpTo(k) { const ws = weights().filter(e => e.k <= k); return ws.length ? ws[ws.length - 1].w : state.profile.startWeight; }
+  // US Navy tape method, all in cm
+  function bodyFat(k) {
+    const p = state.profile, h = p.heightCm, w = latestUpTo("waist", k), n = latestUpTo("neck", k), hip = latestUpTo("hip", k);
+    if (!w || !n) return null;
+    let bf;
+    if (p.sex === "f") {
+      if (!hip || w + hip - n <= 0) return null;
+      bf = 495 / (1.29579 - 0.35004 * Math.log10(w + hip - n) + 0.22100 * Math.log10(h)) - 450;
+    } else {
+      if (w - n <= 0) return null;
+      bf = 495 / (1.0324 - 0.19077 * Math.log10(w - n) + 0.15456 * Math.log10(h)) - 450;
+    }
+    return bf > 2 && bf < 70 ? bf : null;
+  }
+  function bfClass(bf, sex) {
+    const t = sex === "f" ? [14, 21, 25, 32] : [6, 14, 18, 25];
+    return bf < t[0] ? ["Essential fat only", "warn"] : bf < t[1] ? ["Athletic", "ok"] : bf < t[2] ? ["Fit", "ok"] : bf < t[3] ? ["Average", "warn"] : ["High", "bad"];
+  }
+  function progBody(c) {
+    const p = state.profile, t = today(), d = state.days[t] || {}, dm = d.m || {};
+    const dates = measDates();
+    const bfNow = bodyFat(t);
+    const bfDates = dates.filter(k => bodyFat(k) !== null);
+    const bfFirst = bfDates.length ? bodyFat(bfDates[0]) : null;
+    const waistNow = latestUpTo("waist", t);
+    const whtr = waistNow ? waistNow / p.heightCm : null;
+    const first = f => { const k = dates.find(x => mval(x, f) !== null); return k ? mval(k, f) : null; };
+    const [bfL, bfT] = bfNow !== null ? bfClass(bfNow, p.sex) : ["", ""];
+    const goal = p.sex === "f" ? 32 : 25;
+    return `
+      <div class="panel hero">
+        <p class="label">Body composition</p>
+        ${bfNow !== null ? `<p class="hero-line">About <em>${r1(bfNow)}% body fat</em>: ${r1(c.current * bfNow / 100)} kg of fat and ${r1(c.current * (1 - bfNow / 100))} kg of everything else.</p>
+        <div class="stats">
+          <div class="stat"><span class="label">Body fat</span><b>${r1(bfNow)}%</b><span class="sub"><span class="chip ${bfT}">${bfL}</span></span></div>
+          <div class="stat"><span class="label">Change</span><b>${bfFirst !== null && bfDates.length > 1 ? (bfNow - bfFirst > 0 ? "+" : "") + r1(bfNow - bfFirst) + "%" : "–"}</b><span class="sub">${bfDates.length > 1 ? "since " + fmtDate(bfDates[0]) : "measure again next week"}</span></div>
+          <div class="stat"><span class="label">Next target</span><b>under ${goal}%</b><span class="sub">out of the high range</span></div>
+          <div class="stat"><span class="label">Waist ÷ height</span><b>${whtr ? whtr.toFixed(2) : "–"}</b><span class="sub">${whtr && whtr < 0.5 ? "healthy, under 0.5" : "aim for under 0.5"}</span></div>
+        </div>` : `<p class="hero-line">Measure your <em>waist and neck</em>${p.sex === "f" ? " and hips" : ""} to see your body fat %.</p>
+        <p class="small muted">Body fat shows progress the scale misses: when you build muscle and lose fat, your weight can stay the same while your body fat drops.</p>`}
+        <p class="small muted">Estimated with the US Navy tape method, usually within 3–4% of a lab scan. Use it to watch the trend.</p>
+      </div>
+      <div class="grid2">
+        <div class="panel">
+          <h2>Measure today</h2>
+          <p class="small muted">Use a soft tape measure, in the morning before eating, once a week. Leave a box empty to skip it.</p>
+          <div class="mgrid">${MEAS.map(([f, l]) => `<div class="field"><label for="m-${f}">${l} (cm)</label><input id="m-${f}" type="number" step="0.5" min="20" max="250" inputmode="decimal" value="${(f === "waist" ? d.waist : dm[f]) ?? ""}"></div>`).join("")}</div>
+          <button class="btn primary" id="m-save">Save measurements</button>
+          <p class="small muted" id="m-msg"></p>
+        </div>
+        <div class="panel">
+          <h2>How to measure</h2>
+          <ul class="plain small">${MEAS.map(([, l, how]) => `<li><b>${l}:</b> ${how}</li>`).join("")}</ul>
+          <p class="small muted">Keep the tape snug on the skin without pressing in. Measure twice and use the average.</p>
+        </div>
+        <div class="panel wide">
+          <h2>Measurement history</h2>
+          ${dates.length ? `<div class="tbl-wrap"><table><thead><tr><th>Date</th>${MEAS.map(([, l]) => `<th>${l}</th>`).join("")}<th>Body fat</th></tr></thead><tbody>
+            ${dates.slice().reverse().slice(0, 20).map(k => `<tr><td>${fmtDate(k)}</td>${MEAS.map(([f]) => `<td class="n">${mval(k, f) ?? "–"}</td>`).join("")}<td class="n">${bodyFat(k) !== null ? r1(bodyFat(k)) + "%" : "–"}</td></tr>`).join("")}
+            ${dates.length > 1 ? `<tr><td><b>Change</b></td>${MEAS.map(([f]) => { const a = first(f), b = latestUpTo(f, t); return `<td class="n">${a !== null && b !== null ? (b - a > 0 ? "+" : "") + r1(b - a) : "–"}</td>`; }).join("")}<td></td></tr>` : ""}
+          </tbody></table></div>` : `<p class="muted">No measurements yet. Your first set becomes your starting point.</p>`}
+        </div>
+      </div>`;
+  }
+
+  // ---------- progress photos (kept on this device only, in IndexedDB) ----------
+  let photos = [], photosReady = false, photoErr = "";
+  function idbReq(mode, fn) {
+    return new Promise((res, rej) => {
+      const open = indexedDB.open("body-reset-photos", 1);
+      open.onupgradeneeded = () => open.result.createObjectStore("photos", { keyPath: "id" });
+      open.onerror = () => rej(open.error);
+      open.onsuccess = () => {
+        const tx = open.result.transaction("photos", mode), r = fn(tx.objectStore("photos"));
+        tx.oncomplete = () => { open.result.close(); res(r && r.result); };
+        tx.onerror = () => rej(tx.error);
+      };
+    });
+  }
+  const sortPhotos = () => photos.sort((a, b) => (a.d + a.id).localeCompare(b.d + b.id));
+  async function initPhotos() {
+    try {
+      const all = (await idbReq("readonly", s => s.getAll())) || [];
+      photos = all.map(x => ({ ...x, url: URL.createObjectURL(x.blob) }));
+      sortPhotos();
+    } catch (e) { photoErr = "Photos can't be saved in this browser. In Safari, turn off Private Browsing."; }
+    photosReady = true;
+    if (tab === "progress") render();
+  }
+  // shrink to at most 1000 px so a year of weekly photos stays small
+  function shrink(file) {
+    return new Promise((res, rej) => {
+      const u = URL.createObjectURL(file), im = new Image();
+      im.onload = () => {
+        const s = Math.min(1, 1000 / Math.max(im.naturalWidth, im.naturalHeight));
+        const cv = document.createElement("canvas");
+        cv.width = Math.round(im.naturalWidth * s); cv.height = Math.round(im.naturalHeight * s);
+        cv.getContext("2d").drawImage(im, 0, 0, cv.width, cv.height);
+        URL.revokeObjectURL(u);
+        cv.toBlob(b => b ? res(b) : rej(new Error("encode")), "image/jpeg", 0.82);
+      };
+      im.onerror = () => { URL.revokeObjectURL(u); rej(new Error("load")); };
+      im.src = u;
+    });
+  }
+  async function addPhoto(file) {
+    const msg = document.getElementById("ph-msg");
+    if (msg) msg.textContent = "Saving…";
+    try {
+      const rec = { id: uid(), d: document.getElementById("ph-date").value || today(), pose: document.getElementById("ph-pose").value, blob: await shrink(file) };
+      await idbReq("readwrite", s => s.put(rec));
+      photos.push({ ...rec, url: URL.createObjectURL(rec.blob) });
+      sortPhotos();
+      phPose = rec.pose; cmpA = cmpB = null;
+      render();
+    } catch (e) { if (msg) msg.textContent = "Couldn't save that photo. Try a different one, or free up space on your phone."; }
+  }
+  async function removePhoto(id) {
+    try { await idbReq("readwrite", s => s.delete(id)); } catch (e) {}
+    const x = photos.find(p => p.id === id); if (x) URL.revokeObjectURL(x.url);
+    photos = photos.filter(p => p.id !== id); delPhoto = null;
+    render();
+  }
+  function progPhotos() {
+    const poses = [["front", "Front"], ["side", "Side"], ["back", "Back"]];
+    const list = photos.filter(x => x.pose === phPose);
+    const a = list.find(x => x.id === cmpA) || list[0], b = list.find(x => x.id === cmpB) || list[list.length - 1];
+    const fig = (x, label) => `<figure><img src="${x.url}" alt="${label}: ${phPose} photo from ${fmtDate(x.d)}"><figcaption>${label}: ${fmtDate(x.d)} · ${r1(weightUpTo(x.d))} kg</figcaption></figure>`;
+    const opts = sel => list.map(x => `<option value="${x.id}" ${sel && sel.id === x.id ? "selected" : ""}>${fmtDate(x.d)}</option>`).join("");
+    return `
+      <div class="panel">
+        <div class="panel-head"><h2>Before and now</h2><span class="small muted">${photos.length} ${photos.length === 1 ? "photo" : "photos"}</span></div>
+        <div class="seg" role="group">${poses.map(([v, l]) => `<button data-phpose="${v}" aria-pressed="${phPose === v}">${l}</button>`).join("")}</div>
+        ${!photosReady ? `<p class="muted">Loading photos…</p>` : list.length ? `
+          <div class="compare">${fig(a, "Before")}${list.length > 1 ? fig(b, "Now") : `<div class="photo-empty">Add another ${phPose} photo next week to compare.</div>`}</div>
+          ${list.length > 1 ? `<div class="row"><div class="field"><label for="cmp-a">Before</label><select id="cmp-a">${opts(a)}</select></div><div class="field"><label for="cmp-b">Now</label><select id="cmp-b">${opts(b)}</select></div></div>` : ""}` :
+          `<p class="muted">No ${phPose} photos yet. Add your first one below. Day 1 photos are the ones you'll be most glad you took.</p>`}
+      </div>
+      <div class="grid2">
+        <div class="panel">
+          <h2>Add a photo</h2>
+          <div class="row">
+            <div class="field"><label for="ph-pose">Pose</label><select id="ph-pose">${poses.map(([v, l]) => `<option value="${v}" ${phPose === v ? "selected" : ""}>${l}</option>`).join("")}</select></div>
+            <div class="field"><label for="ph-date">Date</label><input id="ph-date" type="date" max="${today()}" value="${today()}"></div>
+          </div>
+          <div class="field"><label for="ph-file">Take or choose a photo</label><input id="ph-file" type="file" accept="image/*"></div>
+          <p class="small muted" id="ph-msg">${photoErr || "Same spot, same light, same clothes, first thing in the morning. Once a week is plenty."}</p>
+        </div>
+        <div class="panel">
+          <h2>Private by design</h2>
+          <p class="small muted">Photos are saved only inside this app on this device. They're never uploaded and aren't part of the backup text.</p>
+          <p class="small muted">Tip: stand your phone on a shelf and use the camera's timer, so every photo is from the same height and distance.</p>
+        </div>
+        ${photos.length ? `<div class="panel wide">
+          <h2>All photos</h2>
+          <div class="thumbs">${photos.slice().reverse().map(x => `<figure><img src="${x.url}" alt="${x.pose} photo from ${fmtDate(x.d)}" loading="lazy"><figcaption>${fmtDate(x.d)} · ${x.pose}</figcaption><button class="btn small ${delPhoto === x.id ? "danger" : ""}" data-delph="${x.id}">${delPhoto === x.id ? "Tap again to delete" : "Delete"}</button></figure>`).join("")}</div>
+        </div>` : ""}
+      </div>`;
+  }
+
   function weekChange(ws) {
     if (ws.length < 2) return null;
     const last = ws[ws.length - 1];
@@ -1598,6 +1857,10 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
       case "p-act": p.activity = Number(t.value); return save();
       case "p-wake": if (t.value) p.wake = t.value; return save();
       case "p-start": if (t.value) p.startDate = t.value; return save();
+      case "ph-pose": phPose = t.value; cmpA = cmpB = null; return render();
+      case "cmp-a": cmpA = t.value; return render();
+      case "cmp-b": cmpB = t.value; return render();
+      case "ph-file": if (t.files && t.files[0]) addPhoto(t.files[0]); return;
     }
   });
 
@@ -1617,6 +1880,17 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
     if (t.dataset.done) { d.h = d.h || {}; d.h[t.dataset.done] = true; return save(); }
     // food
     if (t.dataset.meal) { foodMeal = t.dataset.meal; return render(); }
+    if (t.dataset.planday) { planDay = Number(t.dataset.planday); return render(); }
+    if (t.dataset.logmeal) {
+      const m = t.dataset.logmeal; d.food = d.food || [];
+      PLAN[planDay][m].forEach(([n, q]) => { const f = foodByName(n); d.food.push({ id: uid(), meal: m, n: f.n, u: f.u, kcal: f.kcal, p: f.p, qty: q }); });
+      return save();
+    }
+    if (t.dataset.phpose) { phPose = t.dataset.phpose; cmpA = cmpB = null; return render(); }
+    if (t.dataset.delph) {
+      if (delPhoto !== t.dataset.delph) { delPhoto = t.dataset.delph; return render(); }
+      return removePhoto(t.dataset.delph);
+    }
     if (t.dataset.addfood) {
       const f = (state.myFoods || []).concat(FOODS).find(x => x.id === t.dataset.addfood); if (!f) return;
       d.food = d.food || [];
@@ -1675,6 +1949,33 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
         d.food = y.map(x => ({ ...x, id: uid() })); return save();
       }
       case "g-add": { const v = document.getElementById("g-new").value.trim(); if (v) { state.grocery.push({ id: "g" + uid(), t: v, done: false }); return save(); } return; }
+      case "m-save": {
+        const dd = day(tk); dd.m = dd.m || {};
+        let n = 0;
+        MEAS.forEach(([f]) => {
+          const v = num(document.getElementById("m-" + f).value), ok = v !== null && v >= 20 && v <= 250;
+          if (f === "waist") { if (ok) { dd.waist = r1(v); n++; } else delete dd.waist; }
+          else if (ok) { dd.m[f] = r1(v); n++; } else delete dd.m[f];
+        });
+        save();
+        const msg = document.getElementById("m-msg");
+        if (msg) msg.textContent = n ? `Saved ${n} ${n === 1 ? "measurement" : "measurements"}.` : "Enter at least one measurement.";
+        return;
+      }
+      case "plan-shop": {
+        const keys = new Set();
+        PLAN.forEach(P => MEALS.forEach(([m]) => P[m].forEach(([n]) => { if (SHOP_FOR[n]) keys.add(SHOP_FOR[n]); })));
+        let added = 0, unticked = 0;
+        keys.forEach(k => {
+          const have = state.grocery.find(g => g.t.toLowerCase().includes(k));
+          if (have) { if (have.done) { have.done = false; unticked++; } }
+          else { state.grocery.push({ id: "g" + uid(), t: SHOP_ITEM[k], done: false }); added++; }
+        });
+        save();
+        const msg = document.getElementById("plan-msg");
+        if (msg) msg.textContent = `Added ${added} new ${added === 1 ? "item" : "items"}${unticked ? ` and unticked ${unticked}` : ""}. Open Shop to see the list.`;
+        return;
+      }
       case "g-clear": state.grocery.forEach(x => { x.done = false; }); return save();
       case "g-remove": state.grocery = state.grocery.filter(x => !x.done); return save();
       case "rd-add": {
@@ -1828,6 +2129,7 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
 
   render();
   initSync();
+  initPhotos();
   tick();
   setInterval(tick, 20 * 1000);
   // offline support when installed from the website (not inside Claude)
