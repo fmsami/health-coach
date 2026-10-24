@@ -92,7 +92,7 @@ nav.tabs button[aria-selected="true"] { color: var(--accent); border-bottom-colo
     background: var(--surface); border-top: 1px solid var(--line);
     padding: 4px max(4px, env(safe-area-inset-right, 0px)) calc(4px + env(safe-area-inset-bottom, 0px)) max(4px, env(safe-area-inset-left, 0px));
   }
-  nav.tabs button { flex: 1 1 0; flex-direction: column; gap: 2px; padding: 6px 0; font-size: .7rem; border-bottom: 0; border-top: 3px solid transparent; min-width: 0; }
+  nav.tabs button { flex: 1 1 0; flex-direction: column; gap: 2px; padding: 6px 0; font-size: .66rem; border-bottom: 0; border-top: 3px solid transparent; min-width: 0; }
   nav.tabs button[aria-selected="true"] { border-top-color: var(--accent); }
   nav.tabs svg { width: 22px; height: 22px; }
   body { padding-bottom: 96px; }
@@ -276,6 +276,20 @@ td.n { font-family: var(--font-num); font-variant-numeric: tabular-nums; white-s
 .badge span { font-size: .78rem; color: var(--muted); }
 .report { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
 
+/* Coach chat */
+.chat { display: grid; gap: 10px; }
+.bubble { max-width: 88%; padding: 10px 14px; border-radius: 16px; display: grid; gap: 6px; overflow-wrap: anywhere; }
+.bubble p, .bubble ul, .bubble ol { margin: 0; }
+.bubble ul, .bubble ol { padding-left: 1.2em; display: grid; gap: 3px; }
+.bubble.me { justify-self: end; background: var(--accent); color: var(--accent-ink); border-bottom-right-radius: 4px; white-space: pre-wrap; }
+.bubble.bot { justify-self: start; background: var(--surface); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
+.bubble .saved { font-size: .78rem; color: var(--accent); font-weight: 700; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chips button { border: 1px solid var(--line); background: var(--surface); border-radius: 99px; padding: 8px 12px; font-size: .85rem; font-weight: 700; text-align: left; }
+.composer { position: sticky; bottom: calc(70px + env(safe-area-inset-bottom, 0px)); z-index: 3; background: var(--bg); padding-block: 8px; display: flex; gap: 8px; align-items: end; }
+@media (min-width: 701px) { .composer { bottom: 0; } }
+.composer textarea { flex: 1; min-height: 46px; max-height: 140px; resize: none; }
+
 /* Readings */
 .readings { list-style: none; margin: 0; padding: 0; display: grid; }
 .readings li { display: grid; grid-template-columns: 1fr auto; gap: 4px 10px; padding: 10px 0; border-top: 1px solid var(--line); align-items: center; }
@@ -310,6 +324,7 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
   </div>
   <nav class="tabs" role="tablist" id="tabs">
     <button role="tab" data-tab="today" id="tab-today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/></svg>Today</button>
+    <button role="tab" data-tab="coach" id="tab-coach"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 5h14a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H10l-4 3v-3H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"/><path d="M8 10h8M8 13h5"/></svg>Coach</button>
     <button role="tab" data-tab="train" id="tab-train"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7v10M18 7v10M3 10v4M21 10v4M6 12h12"/></svg>Train</button>
     <button role="tab" data-tab="food" id="tab-food"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11h16a8 8 0 0 1-16 0z"/><path d="M9 7c0-1 1-1.5 1-3M14 7c0-1 1-1.5 1-3"/></svg>Food</button>
     <button role="tab" data-tab="progress" id="tab-progress"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19h16M6 15l4-4 3 3 5-6"/></svg>Progress</button>
@@ -369,7 +384,7 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
       v: 2, updatedAt: 0,
       profile: { name: "", age: 30, sex: "m", heightCm: 175.3, startWeight: 90, activity: 1.2, wake: "07:00", startDate: today(), confirmed: false },
       days: {}, labs: {}, sleep: {}, reminders: { on: false },
-      workouts: [], readings: [], custom: [], myFoods: [], session: null,
+      workouts: [], readings: [], custom: [], myFoods: [], session: null, chat: [], notes: [],
       grocery: GROCERY.map((t, i) => ({ id: "g" + i, t, done: false }))
     };
   }
@@ -733,7 +748,7 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
       <div class="note ok">
         <strong>Coach tip</strong>
         <p class="small">${esc(tip)}</p>
-        <div class="row"><button class="btn small" id="open-sos">Craving SOS</button><button class="btn small" id="open-breathe">2-minute calm breathing</button></div>
+        <div class="row"><button class="btn small primary" data-ask="What did I miss today, and what can I still do?">Ask my coach what I missed</button><button class="btn small" id="open-sos">Craving SOS</button><button class="btn small" id="open-breathe">2-minute calm breathing</button></div>
       </div>
       <div class="grid2">
         <div class="panel">
@@ -1621,6 +1636,221 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
       </div>`;
   }
 
+  // ---------- COACH CHAT ----------
+  // Inside the Claude viewer the coach runs on the viewer's Claude account (`sample`);
+  // in the installed app it uses an Anthropic API key the user keeps on their own device.
+  const KEY_LS = LS_KEY + ":apikey";
+  const SDK_URL = "https://cdn.jsdelivr.net/npm/@anthropic-ai/sdk@0.132.1/+esm";
+  const CLAUDE_LINK = "https://claude.ai/artifact/NijiJ8i7ULvYgw77vFm7QY";
+  let sampleFn = null, AnthropicSDK = null, chatBusy = false, chatCtl = null, chatErr = "", keyMsg = "";
+  const getKey = () => { try { return localStorage.getItem(KEY_LS) || ""; } catch (e) { return ""; } };
+  const aiMode = () => sampleFn ? "claude" : getKey() ? "key" : "none";
+  async function initAI() {
+    try {
+      if (window.claude && typeof window.claude.use === "function") sampleFn = await window.claude.use("sample");
+    } catch (e) { sampleFn = null; }
+    if (tab === "coach") render();
+  }
+  const COACH_RULES = `You are Body Reset Coach, the friendly, practical health and fitness coach inside the user's Body Reset Coach app. You act like a personal trainer and a caring family doctor, but you are not a doctor and say so when it matters.
+
+How to help:
+- Use the USER DATA below: their checklist, food, workouts, weight, sleep, notes and targets. Be specific, with real numbers from their data.
+- If they ask what they missed, list the unticked checklist tasks and what they can still do today.
+- Suggest Bangladeshi and South Asian home food first (rice, roti, dal, fish, chicken, eggs, doi, chana), with simple portions.
+- Respect everything in their notes. If they don't eat vegetables, never just tell them to eat vegetables: suggest workarounds such as fruit, vegetables blended into dal, khichuri, soup or chicken curry, small steps like one new vegetable a week, and fibre from oats, chana, dal and fruit.
+- Keep it to what someone can do today. Encourage; never shame. One slip doesn't matter.
+- Keep answers short: under 150 words, plain language, short bullet points. No tables, no headings.
+- Safety: for chest pain, fainting, severe breathlessness, signs of stroke, very high blood pressure (180/120 or more) or very high or low sugar, tell them to get medical help now. For medicines, injuries or conditions, give general guidance and tell them to check with their doctor. Never suggest eating under 1,500 kcal (1,300 for women) or extreme diets.
+- Memory: when the user tells you a lasting fact about themselves (food likes or dislikes, an injury, a condition, a medicine, their schedule, a goal), end your reply with one line per new fact in this exact form: <remember>short fact in their words</remember>. Skip facts already in their notes.`;
+  function coachContext() {
+    const c = calc(), p = state.profile, t = today(), d = state.days[t] || {}, H = checklist(c), rel = relNow();
+    const st = streaks(c), wk = weekStats(t, st.ids), food = d.food || [], tot = foodTotals(t);
+    const label = s => ({ done: "done", late: "missed so far", now: "due now", later: "later today" }[s]);
+    const recentW = c.ws.slice(-8).map(e => `${e.k} ${e.w} kg`).join(", ");
+    const reads = (state.readings || []).slice(-4).map(r => r.type === "bp" ? `${r.d} BP ${r.sys}/${r.dia}` : `${r.d} sugar ${r1(r.mg / 18)} mmol/L (${r.when})`).join("; ");
+    const bf = bodyFat(t), waist = latestUpTo("waist", t);
+    return [
+      "USER DATA (from the app):",
+      `Now: ${fmtDateLong(t)}, ${fmt12(nowHM())}.`,
+      `Profile: ${p.name || "no name given"}, ${p.age} years, ${p.sex === "f" ? "female" : "male"}, ${r1(p.heightCm)} cm. Started at ${p.startWeight} kg on ${p.startDate}; now ${r1(c.current)} kg, BMI ${r1(c.bmi)}. Day ${c.dayNo} of the plan, week ${c.week}, phase ${c.phase}. Wakes at ${fmt12(p.wake)}.`,
+      `Daily targets: ${c.target} kcal, ${c.protein} g protein, ${c.glasses} glasses of water, ${c.steps} steps.`,
+      `Today's checklist: ${H.map(h => `${fmt12(h.time)} ${h.t} [${label(statusOf(h, d, rel))}]`).join("; ")}.`,
+      `Today so far: water ${d.water || 0}/${c.glasses} glasses, steps ${d.steps ?? "not logged"}, sleep last night ${d.sleep ?? "not logged"} h, mood ${d.mood ?? "-"}/5, energy ${d.energy ?? "-"}/5.`,
+      `Food logged today (${Math.round(tot.kcal)} kcal, ${Math.round(tot.p)} g protein): ${food.length ? food.map(e => `${e.meal}: ${e.qty} x ${e.n}`).join("; ") : "nothing logged yet"}.`,
+      `Today's planned workout: ${WEEK[new Date().getDay()].title}. Workouts in the last 7 days: ${state.workouts.filter(x => diffDays(x.d, t) < 7).map(x => `${x.d} ${woName(x)}`).join("; ") || "none"}.`,
+      `Last 7 days: average weight ${wk.w !== null ? r1(wk.w) + " kg" : "-"}, checklist ${wk.score !== null ? Math.round(wk.score * 100) + "%" : "-"}, average calories logged ${wk.kcal !== null ? Math.round(wk.kcal) : "-"} (${wk.foodDays} days logged), average sleep ${wk.sleep !== null ? r1(wk.sleep) + " h" : "-"}. Current streak ${st.cur} days.`,
+      `Recent weigh-ins: ${recentW || "none"}.`,
+      `Body: waist ${waist ?? "not measured"} cm, body fat ${bf !== null ? r1(bf) + "%" : "not measured"}.`,
+      `Recent BP and sugar readings: ${reads || "none"}.`,
+      `Their notes about themselves: ${(state.notes || []).map(n => n.t).join("; ") || "none yet"}.`
+    ].join("\n");
+  }
+  // alternating turns for the model: start on the user, merge repeats, keep the last 20
+  function chatTurns() {
+    const out = [];
+    state.chat.slice(-20).forEach(m => {
+      if (!out.length && m.role !== "user") return;
+      if (out.length && out[out.length - 1].role === m.role) out[out.length - 1].content += "\n\n" + m.content;
+      else out.push({ role: m.role, content: m.content });
+    });
+    return out;
+  }
+  const stripRemember = s => s.replace(/<remember>[\s\S]*?(<\/remember>|$)/g, "").trim();
+  function extractRemember(s) {
+    const facts = [...s.matchAll(/<remember>([\s\S]*?)<\/remember>/g)].map(m => m[1].trim()).filter(Boolean);
+    return { clean: stripRemember(s), facts };
+  }
+  // small, safe Markdown: paragraphs, bullet and numbered lists, bold
+  function md(s) {
+    let out = "", list = null;
+    const inline = t => t.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>");
+    esc(s).split("\n").forEach(raw => {
+      const l = raw.trim(), m = l.match(/^([-*•]|\d+[.)])\s+(.*)$/);
+      if (m) {
+        const tag = /\d/.test(m[1]) ? "ol" : "ul";
+        if (list !== tag) { if (list) out += `</${list}>`; out += `<${tag}>`; list = tag; }
+        out += `<li>${inline(m[2])}</li>`;
+      } else {
+        if (list) { out += `</${list}>`; list = null; }
+        if (l) out += `<p>${inline(l.replace(/^#+\s*/, ""))}</p>`;
+      }
+    });
+    return out + (list ? `</${list}>` : "");
+  }
+  async function askWithKey(system, messages, onText, signal) {
+    if (!AnthropicSDK) AnthropicSDK = (await import(SDK_URL)).default;
+    const Anthropic = AnthropicSDK;
+    const client = new Anthropic({ apiKey: getKey(), dangerouslyAllowBrowser: true });
+    try {
+      const stream = client.beta.messages.stream({
+        model: "claude-opus-5-5",
+        max_tokens: 16000,
+        output_config: { effort: "low" },
+        betas: ["server-side-fallback-2026-07-01"],
+        fallbacks: "default",
+        system,
+        messages
+      }, { signal });
+      let text = "";
+      for await (const ev of stream) {
+        if (ev.type === "content_block_delta" && ev.delta.type === "text_delta") { text += ev.delta.text; onText(text); }
+      }
+      const final = await stream.finalMessage();
+      if (final.stop_reason === "refusal") throw { code: "refusal" };
+      return text;
+    } catch (e) {
+      if (e && e.code === "refusal") throw e;
+      if (e instanceof Anthropic.APIUserAbortError) throw { code: "cancelled" };
+      if (e instanceof Anthropic.AuthenticationError || e instanceof Anthropic.PermissionDeniedError) throw { code: "bad_key" };
+      if (e instanceof Anthropic.RateLimitError) throw { code: "rate_limited" };
+      if (e instanceof Anthropic.APIConnectionError) throw { code: "offline" };
+      if (e instanceof Anthropic.APIError) throw { code: "api", status: e.status };
+      throw { code: "unknown" };
+    }
+  }
+  function chatErrText(e) {
+    switch (e && e.code) {
+      case "cancelled": return "Stopped.";
+      case "not_granted": return "The coach needs your permission to use Claude. Reload the page and choose Allow.";
+      case "rate_limited": return "Too many messages at once. Wait a minute and try again.";
+      case "bad_key": return "Your API key didn't work. Check it in the coach settings below, or make a new one at console.anthropic.com.";
+      case "offline": return "No internet connection. The coach needs the internet; the rest of the app works offline.";
+      case "refusal": return "The coach couldn't answer that one. Try asking it a different way.";
+      case "api": return e.status === 402 || e.status === 400 ? "Your Anthropic account couldn't run the request. Check your credit balance at console.anthropic.com." : "Claude is busy right now. Try again in a minute.";
+      default: return "The coach couldn't answer right now. Try again.";
+    }
+  }
+  async function sendChat(text) {
+    text = (text || "").trim();
+    if (!text || chatBusy || aiMode() === "none") return;
+    state.chat.push({ role: "user", content: text, at: Date.now() });
+    chatErr = ""; chatBusy = true; tab = "coach";
+    save(); scrollChat();
+    chatCtl = new AbortController();
+    const onText = full => { const el = document.getElementById("bubble-live"); if (el) el.innerHTML = md(stripRemember(full)) || "<p>Thinking…</p>"; };
+    try {
+      const turns = chatTurns(), intro = COACH_RULES + "\n\n" + coachContext();
+      const reply = aiMode() === "claude"
+        ? (await sampleFn([{ role: "user", content: intro }, { role: "assistant", content: "Got it. I have your data and I'm ready to help." }, ...turns],
+            { cache: false, signal: chatCtl.signal, onText: ({ text: t }) => onText(t) })).text
+        : await askWithKey(intro, turns, onText, chatCtl.signal);
+      const { clean, facts } = extractRemember(reply);
+      const added = facts.filter(f => !state.notes.some(n => n.t.toLowerCase() === f.toLowerCase()));
+      added.forEach(f => state.notes.push({ id: uid(), t: f }));
+      state.chat.push({ role: "assistant", content: clean || "…", at: Date.now(), saved: added });
+    } catch (e) { chatErr = chatErrText(e); }
+    chatBusy = false; chatCtl = null;
+    if (state.chat.length > 80) state.chat = state.chat.slice(-80);
+    save(); scrollChat();
+  }
+  function scrollChat() { requestAnimationFrame(() => { const el = document.getElementById("chat-end"); if (el) el.scrollIntoView({ block: "end" }); }); }
+  const QUICK = [
+    "What did I miss today, and what can I still do?",
+    "I don't eat vegetables. What can I eat instead?",
+    "Plan my meals for tomorrow",
+    "I ate too much at a dawat. What now?",
+    "My knees hurt. How should I change my workout?",
+    "Review my last week"
+  ];
+  function viewCoach() {
+    const mode = aiMode();
+    const notes = state.notes || [];
+    const notesPanel = `
+      <details class="recipe" ${notes.length ? "" : "open"}>
+        <summary><span>What the coach knows about me</span><span class="num small muted">${notes.length}</span></summary>
+        <p class="small muted">Things like "I don't eat vegetables", "bad left knee" or "night shifts". The coach adds to this when you tell it something about yourself.</p>
+        ${notes.length ? `<ul class="entries">${notes.map(n => `<li class="entry"><span>${esc(n.t)}</span><button class="btn small" data-delnote="${n.id}">Remove</button></li>`).join("")}</ul>` : ""}
+        <div class="row"><div class="field"><label for="note-new">Add something</label><input id="note-new" type="text" maxlength="120" placeholder="e.g. I don't eat vegetables"></div><button class="btn" id="note-add">Add</button></div>
+      </details>`;
+    const keyPanel = `
+      <details class="recipe" ${mode === "none" ? "open" : ""}>
+        <summary><span>${mode === "key" ? "Coach settings: API key saved" : "Use the coach in this app"}</span></summary>
+        <p class="small muted">The coach runs on Claude. In this app it uses your own Anthropic API key, which stays only on this phone: it isn't in your backup, your data or the app's code.</p>
+        <ol class="plain small">
+          <li>Go to <b>console.anthropic.com</b>, sign in, and add a few dollars of credit.</li>
+          <li>Open <b>API keys</b>, create a key, and copy it.</li>
+          <li>Paste it below. Each message costs about 1–3 US cents.</li>
+        </ol>
+        ${mode === "key" ? `<button class="btn danger" id="ai-remove">Remove my API key</button>` : `
+        <div class="row"><div class="field"><label for="ai-key">Anthropic API key</label><input id="ai-key" type="password" autocomplete="off" placeholder="sk-ant-…"></div><button class="btn primary" id="ai-save">Save key</button></div>`}
+        <p class="small muted">${esc(keyMsg) || `No key? Open your private Claude link (${CLAUDE_LINK.replace("https://", "")}) instead: there the coach uses your Claude account at no extra cost.`}</p>
+      </details>`;
+    if (mode === "none") {
+      return `
+        <div class="panel hero">
+          <p class="label">Your coach</p>
+          <p class="hero-line">Ask anything: <em>what you missed</em>, what to eat instead of vegetables, how to fix a bad day.</p>
+          <p class="small muted">The coach sees your checklist, food, workouts, weight and notes, so its advice is about you.</p>
+        </div>
+        ${keyPanel}
+        ${notesPanel}`;
+    }
+    const msgs = state.chat;
+    return `
+      <div class="panel hero">
+        <p class="label">Your coach · ${mode === "claude" ? "using your Claude account" : "using your API key"}</p>
+        <p class="hero-line">Tell me what you did, what you <em>can't</em> do, or what went wrong. I'll adjust your plan.</p>
+        <p class="small muted">I see your checklist, food, workouts, weight and notes. I'm not a doctor: for anything worrying, see one.</p>
+      </div>
+      ${notesPanel}
+      <div class="chat" aria-live="polite">
+        ${!msgs.length ? `<div class="chips">${QUICK.map(q => `<button data-ask="${esc(q)}">${esc(q)}</button>`).join("")}</div>` : ""}
+        ${msgs.map(m => m.role === "user"
+          ? `<div class="bubble me">${esc(m.content)}</div>`
+          : `<div class="bubble bot">${md(m.content)}${m.saved && m.saved.length ? `<span class="saved">Saved to notes: ${m.saved.map(esc).join("; ")}</span>` : ""}</div>`).join("")}
+        ${chatBusy ? `<div class="bubble bot" id="bubble-live"><p>Thinking…</p></div>` : ""}
+        ${chatErr ? `<p class="small" style="color:var(--danger)">${esc(chatErr)}</p>` : ""}
+        ${msgs.length && !chatBusy ? `<div class="chips">${QUICK.slice(0, 3).map(q => `<button data-ask="${esc(q)}">${esc(q)}</button>`).join("")}</div>` : ""}
+        <span id="chat-end"></span>
+      </div>
+      <div class="composer">
+        <textarea id="chat-in" rows="1" placeholder="Message your coach" aria-label="Message your coach" ${chatBusy ? "disabled" : ""}></textarea>
+        ${chatBusy ? `<button class="btn" id="chat-stop">Stop</button>` : `<button class="btn primary" id="chat-send">Send</button>`}
+      </div>
+      <div class="row">${msgs.length ? `<button class="btn small" id="chat-clear">Clear chat</button>` : ""}</div>
+      ${mode === "key" ? keyPanel : ""}`;
+  }
+
   // ---------- ME ----------
   function viewMe(c) {
     return `${segBar("me", [["details", "Details"], ["tasks", "My tasks"], ["app", "App & backup"]])}
@@ -1818,7 +2048,7 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
     document.getElementById("daychip").textContent = ready ? `Day ${c.dayNo} · ${r1(c.current)} kg` : "";
     if (!ready) { app.innerHTML = `<section class="view">${viewWelcome()}</section>`; return; }
     document.querySelectorAll("#tabs button").forEach(b => b.setAttribute("aria-selected", String(b.dataset.tab === tab)));
-    const v = { today: viewToday, train: viewTrain, food: viewFood, progress: viewProgress, health: viewHealth, me: viewMe }[tab] || viewToday;
+    const v = { today: viewToday, coach: viewCoach, train: viewTrain, food: viewFood, progress: viewProgress, health: viewHealth, me: viewMe }[tab] || viewToday;
     app.innerHTML = `<section class="view" role="tabpanel" aria-labelledby="tab-${tab}">${v(c)}</section>`;
     if (restEnd) updRest();
   }
@@ -1829,6 +2059,10 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
     tab = b.dataset.tab; resetArmed = false;
     try { localStorage.setItem(LS_KEY + ":tab", tab); } catch (err) {}
     render(); window.scrollTo({ top: 0 });
+  });
+
+  app.addEventListener("keydown", e => {
+    if (e.target.id === "chat-in" && e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); sendChat(e.target.value); }
   });
 
   app.addEventListener("input", e => {
@@ -1916,7 +2150,23 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
     if (t.dataset.rtype) { readType = t.dataset.rtype; return render(); }
     if (t.dataset.delrd) { state.readings = state.readings.filter(x => x.id !== t.dataset.delrd); return save(); }
     if (t.dataset.delc) { state.custom = state.custom.filter(x => x.id !== t.dataset.delc); return save(); }
+    if (t.dataset.ask) {
+      if (aiMode() === "none") { tab = "coach"; render(); return window.scrollTo({ top: 0 }); }
+      return sendChat(t.dataset.ask);
+    }
+    if (t.dataset.delnote) { state.notes = state.notes.filter(n => n.id !== t.dataset.delnote); return save(); }
     switch (t.id) {
+      case "chat-send": { const box = document.getElementById("chat-in"); return sendChat(box.value); }
+      case "chat-stop": if (chatCtl) chatCtl.abort(); return;
+      case "chat-clear": state.chat = []; chatErr = ""; return save();
+      case "note-add": { const v = document.getElementById("note-new").value.trim(); if (v) { state.notes.push({ id: uid(), t: v }); return save(); } return; }
+      case "ai-save": {
+        const k = document.getElementById("ai-key").value.trim();
+        if (!/^sk-ant-[\w-]{20,}$/.test(k)) { keyMsg = "That doesn't look like an Anthropic API key. It starts with sk-ant-."; return render(); }
+        try { localStorage.setItem(KEY_LS, k); keyMsg = "Key saved on this phone. Say hello to your coach!"; } catch (err) { keyMsg = "This browser couldn't save the key. In Safari, turn off Private Browsing."; }
+        return render();
+      }
+      case "ai-remove": try { localStorage.removeItem(KEY_LS); } catch (err) {} keyMsg = "Key removed from this phone."; return render();
       case "open-sos": return openSOS();
       case "open-breathe": return openBreathe();
       case "rest-skip": restEnd = Date.now(); return updRest();
@@ -2130,6 +2380,7 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
   render();
   initSync();
   initPhotos();
+  initAI();
   tick();
   setInterval(tick, 20 * 1000);
   // offline support when installed from the website (not inside Claude)

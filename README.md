@@ -14,6 +14,11 @@ The first time you open it, it asks for your age, height, weight, activity and w
 - Streak counter, coach tip of the day, Craving SOS (10-minute timer and steps) and 2-minute calm breathing.
 - Water and step counters, daily check-in (sleep, mood, energy) and morning weigh-in with waist.
 
+**Coach**
+- A chat coach that sees your checklist, food, workouts, weight, sleep, readings and notes. Ask what you missed, what to eat instead of vegetables, or how to recover from a bad day.
+- Remembers lasting facts about you ("I don't eat vegetables", "bad left knee") in an editable notes list.
+- In the private Claude link it uses your Claude account. In the installed app it uses your own Anthropic API key, which stays only on your phone (never in the code, the repo or backups).
+
 **Train**
 - Guided workouts: tap each set as you finish it, and a rest timer starts on its own.
 - A "Watch how it's done" YouTube link on every exercise and stretch.
