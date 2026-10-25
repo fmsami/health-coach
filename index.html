@@ -284,6 +284,10 @@ td.n { font-family: var(--font-num); font-variant-numeric: tabular-nums; white-s
 .bubble.me { justify-self: end; background: var(--accent); color: var(--accent-ink); border-bottom-right-radius: 4px; white-space: pre-wrap; }
 .bubble.bot { justify-self: start; background: var(--surface); border: 1px solid var(--line); border-bottom-left-radius: 4px; }
 .bubble .saved { font-size: .78rem; color: var(--accent); font-weight: 700; }
+.acts-wrap { border-top: 1px solid var(--line); padding-top: 8px; display: grid; gap: 6px; justify-items: start; }
+.acts-wrap.undone .acts { text-decoration: line-through; opacity: .6; }
+ul.acts { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; font-size: .85rem; font-weight: 700; color: var(--accent); }
+ul.acts li::before { content: "✓ "; }
 .chips { display: flex; gap: 8px; flex-wrap: wrap; }
 .chips button { border: 1px solid var(--line); background: var(--surface); border-radius: 99px; padding: 8px 12px; font-size: .85rem; font-weight: 700; text-align: left; }
 .composer { position: sticky; bottom: calc(70px + env(safe-area-inset-bottom, 0px)); z-index: 3; background: var(--bg); padding-block: 8px; display: flex; gap: 8px; align-items: end; }
@@ -407,12 +411,12 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
   let foodQuery = "", foodMeal = defaultMeal(), readType = "bp", resetArmed = false, planDay = new Date().getDay();
   let phPose = "front", cmpA = null, cmpB = null, delPhoto = null;
 
-  function save() {
+  function persist() {
     state.updatedAt = Date.now();
     try { localStorage.setItem(LS_KEY, JSON.stringify(state)); } catch (e) {}
     queuePush();
-    render();
   }
+  function save() { persist(); render(); }
   const day = k => (state.days[k] = state.days[k] || {});
 
   // ---------- account sync (only inside the Claude artifact viewer) ----------
@@ -735,6 +739,12 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
     const moods = ["Low", "Meh", "OK", "Good", "Great"];
     return `
       ${nextUpCard(H, d, rel)}
+      <div class="panel">
+        <div class="row">
+          <div class="field" style="flex:1 1 220px"><label for="quick-chat">Tell your coach what you did, and it ticks things off</label><input id="quick-chat" type="text" autocomplete="off" placeholder="e.g. fish and rice for lunch, walked 15 min"></div>
+          <button class="btn primary" id="quick-send">Send</button>
+        </div>
+      </div>
       <div class="panel hero">
         <p class="label">${esc(fmtDateLong(t))} · Week ${c.week}, phase ${c.phase}</p>
         <p class="hero-line">${p.name ? esc(p.name) + ", today" : "Today"} is about <em>${w.title.toLowerCase()}</em>, ${kc(c.target)} kcal and ${c.protein} g protein.</p>
@@ -1661,7 +1671,9 @@ How to help:
 - Keep it to what someone can do today. Encourage; never shame. One slip doesn't matter.
 - Keep answers short: under 150 words, plain language, short bullet points. No tables, no headings.
 - Safety: for chest pain, fainting, severe breathlessness, signs of stroke, very high blood pressure (180/120 or more) or very high or low sugar, tell them to get medical help now. For medicines, injuries or conditions, give general guidance and tell them to check with their doctor. Never suggest eating under 1,500 kcal (1,300 for women) or extreme diets.
-- Memory: when the user tells you a lasting fact about themselves (food likes or dislikes, an injury, a condition, a medicine, their schedule, a goal), end your reply with one line per new fact in this exact form: <remember>short fact in their words</remember>. Skip facts already in their notes.`;
+- You can update the app with your tools. When the user says they did, ate, drank, weighed, measured or slept something today, call the matching tools straight away without asking, then confirm in one short line what you updated. Pick sensible portions if they don't say, and say what you assumed. Use food_id from the FOOD LIST when a food matches. Don't log things they only plan to do. If they say something was logged wrongly, fix it (untick the task, remove the food entry).
+- Tick the checklist tasks that what they did covers: for example "had lunch with fish and rice" ticks lunch, "walked after lunch" ticks walk, logging water up to the goal ticks water.
+- When the user tells you a lasting fact about themselves (food likes or dislikes, an injury, a condition, a medicine, their schedule, a goal), save it with save_note. Skip facts already in their notes.`;
   function coachContext() {
     const c = calc(), p = state.profile, t = today(), d = state.days[t] || {}, H = checklist(c), rel = relNow();
     const st = streaks(c), wk = weekStats(t, st.ids), food = d.food || [], tot = foodTotals(t);
@@ -1674,15 +1686,16 @@ How to help:
       `Now: ${fmtDateLong(t)}, ${fmt12(nowHM())}.`,
       `Profile: ${p.name || "no name given"}, ${p.age} years, ${p.sex === "f" ? "female" : "male"}, ${r1(p.heightCm)} cm. Started at ${p.startWeight} kg on ${p.startDate}; now ${r1(c.current)} kg, BMI ${r1(c.bmi)}. Day ${c.dayNo} of the plan, week ${c.week}, phase ${c.phase}. Wakes at ${fmt12(p.wake)}.`,
       `Daily targets: ${c.target} kcal, ${c.protein} g protein, ${c.glasses} glasses of water, ${c.steps} steps.`,
-      `Today's checklist: ${H.map(h => `${fmt12(h.time)} ${h.t} [${label(statusOf(h, d, rel))}]`).join("; ")}.`,
+      `Today's checklist (id | time | task [status]): ${H.map(h => `${h.id} | ${fmt12(h.time)} | ${h.t} [${label(statusOf(h, d, rel))}]`).join("; ")}.`,
       `Today so far: water ${d.water || 0}/${c.glasses} glasses, steps ${d.steps ?? "not logged"}, sleep last night ${d.sleep ?? "not logged"} h, mood ${d.mood ?? "-"}/5, energy ${d.energy ?? "-"}/5.`,
-      `Food logged today (${Math.round(tot.kcal)} kcal, ${Math.round(tot.p)} g protein): ${food.length ? food.map(e => `${e.meal}: ${e.qty} x ${e.n}`).join("; ") : "nothing logged yet"}.`,
+      `Food logged today (${Math.round(tot.kcal)} kcal, ${Math.round(tot.p)} g protein), as entry id: meal qty x food: ${food.length ? food.map(e => `${e.id}: ${e.meal} ${e.qty} x ${e.n}`).join("; ") : "nothing logged yet"}.`,
       `Today's planned workout: ${WEEK[new Date().getDay()].title}. Workouts in the last 7 days: ${state.workouts.filter(x => diffDays(x.d, t) < 7).map(x => `${x.d} ${woName(x)}`).join("; ") || "none"}.`,
       `Last 7 days: average weight ${wk.w !== null ? r1(wk.w) + " kg" : "-"}, checklist ${wk.score !== null ? Math.round(wk.score * 100) + "%" : "-"}, average calories logged ${wk.kcal !== null ? Math.round(wk.kcal) : "-"} (${wk.foodDays} days logged), average sleep ${wk.sleep !== null ? r1(wk.sleep) + " h" : "-"}. Current streak ${st.cur} days.`,
       `Recent weigh-ins: ${recentW || "none"}.`,
       `Body: waist ${waist ?? "not measured"} cm, body fat ${bf !== null ? r1(bf) + "%" : "not measured"}.`,
       `Recent BP and sugar readings: ${reads || "none"}.`,
-      `Their notes about themselves: ${(state.notes || []).map(n => n.t).join("; ") || "none yet"}.`
+      `Their notes about themselves: ${(state.notes || []).map(n => n.t).join("; ") || "none yet"}.`,
+      `FOOD LIST (food_id=name, portion, kcal, protein per portion): ${(state.myFoods || []).concat(FOODS).map(f => `${f.id}=${f.n}, ${f.u}, ${f.kcal} kcal, ${f.p} g`).join("; ")}.`
     ].join("\n");
   }
   // alternating turns for the model: start on the user, merge repeats, keep the last 20
@@ -1690,8 +1703,10 @@ How to help:
     const out = [];
     state.chat.slice(-20).forEach(m => {
       if (!out.length && m.role !== "user") return;
-      if (out.length && out[out.length - 1].role === m.role) out[out.length - 1].content += "\n\n" + m.content;
-      else out.push({ role: m.role, content: m.content });
+      let content = m.content;
+      if (m.actions && m.actions.length) content += `\n\n[App updated: ${m.actions.join("; ")}${m.undone ? ". The user then undid these changes" : ""}]`;
+      if (out.length && out[out.length - 1].role === m.role) out[out.length - 1].content += "\n\n" + content;
+      else out.push({ role: m.role, content });
     });
     return out;
   }
@@ -1717,27 +1732,197 @@ How to help:
     });
     return out + (list ? `</${list}>` : "");
   }
+  // ---------- actions the coach can take in the app ----------
+  const KINDS = ["walk", "cycle", "swim", "sport", "A", "B", "stretch"];
+  const TOOL_SPECS = [
+    { name: "tick_tasks", description: "Mark tasks on today's checklist as done, or untick them. Use the task ids from USER DATA. Call this whenever the user says they did something on their checklist.",
+      input_schema: { type: "object", properties: { ids: { type: "array", items: { type: "string" }, description: "Checklist task ids, e.g. breakfast, lunch, walk" }, done: { type: "boolean", description: "true to tick (default), false to untick" } }, required: ["ids"] } },
+    { name: "log_today", description: "Record today's numbers the user tells you. Include only the fields they gave: water glasses drunk so far today (total), steps so far, morning weight, waist, hours slept last night, mood and energy from 1 (low) to 5 (great).",
+      input_schema: { type: "object", properties: { water_glasses: { type: "integer" }, steps: { type: "integer" }, weight_kg: { type: "number" }, waist_cm: { type: "number" }, sleep_hours: { type: "number" }, mood: { type: "integer" }, energy: { type: "integer" } } } },
+    { name: "log_food", description: "Add foods the user ate today to their food diary. Use food_id from the FOOD LIST when one matches; otherwise give name, portion and your best estimate of kcal and protein per portion.",
+      input_schema: { type: "object", properties: { items: { type: "array", items: { type: "object", properties: {
+        meal: { type: "string", enum: ["breakfast", "lunch", "snack", "dinner"] }, qty: { type: "number", description: "Number of portions, default 1" },
+        food_id: { type: "string" }, name: { type: "string" }, portion: { type: "string" }, kcal: { type: "number", description: "kcal per portion" }, protein_g: { type: "number", description: "protein per portion" } }, required: ["meal"] } } }, required: ["items"] } },
+    { name: "remove_food", description: "Remove entries from today's food diary, by entry id from USER DATA.",
+      input_schema: { type: "object", properties: { ids: { type: "array", items: { type: "string" } } }, required: ["ids"] } },
+    { name: "log_workout", description: "Log exercise the user did today. A and B are the plan's two strength sessions.",
+      input_schema: { type: "object", properties: { kind: { type: "string", enum: KINDS }, minutes: { type: "integer" } }, required: ["kind"] } },
+    { name: "log_reading", description: "Save a blood pressure or blood sugar reading the user took.",
+      input_schema: { type: "object", properties: { type: { type: "string", enum: ["bp", "sugar"] }, systolic: { type: "integer" }, diastolic: { type: "integer" }, pulse: { type: "integer" },
+        value: { type: "number", description: "Sugar reading" }, unit: { type: "string", enum: ["mmol", "mg"] }, when: { type: "string", enum: ["fasting", "after", "random"] } }, required: ["type"] } },
+    { name: "save_note", description: "Remember a lasting fact about the user: food likes or dislikes, an injury, a condition, a medicine, their schedule, a goal.",
+      input_schema: { type: "object", properties: { fact: { type: "string" } }, required: ["fact"] } },
+    { name: "add_task", description: "Add a daily task of the user's own to their checklist, at a time of day (24-hour HH:MM).",
+      input_schema: { type: "object", properties: { time: { type: "string" }, text: { type: "string" } }, required: ["time", "text"] } },
+    { name: "add_shopping", description: "Add items to the user's shopping list.",
+      input_schema: { type: "object", properties: { items: { type: "array", items: { type: "string" } } }, required: ["items"] } }
+  ];
+  let liveActions = [], lastUndo = null;
+  const actionsHtml = list => list && list.length ? `<ul class="acts">${list.map(a => `<li>${esc(a)}</li>`).join("")}</ul>` : "";
+  function act(label) { liveActions.push(label); const el = document.getElementById("live-actions"); if (el) el.innerHTML = actionsHtml(liveActions); }
+  // runs one tool call; returns a short result for the model, or throws with what to fix
+  function runTool(name, input) {
+    const c = calc(), t = today(), d = day(t);
+    const inp = input && typeof input === "object" ? input : {};
+    const inRange = (v, lo, hi) => typeof v === "number" && Number.isFinite(v) && v >= lo && v <= hi;
+    const tick = id => { d.h = d.h || {}; d.h[id] = true; };
+    let msg;
+    switch (name) {
+      case "tick_tasks": {
+        const H = checklist(c), ids = Array.isArray(inp.ids) ? inp.ids.map(String) : [];
+        const ok = ids.filter(id => H.some(h => h.id === id)), bad = ids.filter(id => !ok.includes(id));
+        if (!ok.length) throw new Error("No matching task ids. Valid ids: " + H.map(h => h.id).join(", "));
+        const done = inp.done !== false;
+        d.h = d.h || {};
+        ok.forEach(id => { d.h[id] = done; act(`${done ? "Ticked" : "Unticked"}: ${H.find(h => h.id === id).t}`); });
+        msg = `${done ? "Ticked" : "Unticked"} ${ok.join(", ")}.` + (bad.length ? ` Unknown ids ignored: ${bad.join(", ")}.` : "");
+        break;
+      }
+      case "log_today": {
+        const parts = [];
+        if (inRange(inp.water_glasses, 0, 30)) { d.water = Math.round(inp.water_glasses); if (d.water >= c.glasses) tick("water"); parts.push(`Water ${d.water}/${c.glasses} glasses`); }
+        if (inRange(inp.steps, 0, 100000)) { d.steps = Math.round(inp.steps); if (d.steps >= c.steps) tick("steps"); parts.push(`Steps ${d.steps.toLocaleString()}`); }
+        if (inRange(inp.weight_kg, 30, 300)) { d.weight = r1(inp.weight_kg); parts.push(`Weight ${d.weight} kg`); }
+        if (inRange(inp.waist_cm, 40, 200)) { d.waist = r1(inp.waist_cm); parts.push(`Waist ${d.waist} cm`); }
+        if (inRange(inp.sleep_hours, 0, 16)) { d.sleep = inp.sleep_hours; parts.push(`Sleep ${d.sleep} h`); }
+        if (inRange(inp.mood, 1, 5)) { d.mood = Math.round(inp.mood); parts.push(`Mood ${d.mood}/5`); }
+        if (inRange(inp.energy, 1, 5)) { d.energy = Math.round(inp.energy); parts.push(`Energy ${d.energy}/5`); }
+        if (!parts.length) throw new Error("Nothing valid to log: water 0-30, steps 0-100000, weight 30-300 kg, waist 40-200 cm, sleep 0-16 h, mood and energy 1-5.");
+        parts.forEach(act);
+        msg = "Logged " + parts.join(", ") + ".";
+        break;
+      }
+      case "log_food": {
+        const all = (state.myFoods || []).concat(FOODS), added = [];
+        d.food = d.food || [];
+        (Array.isArray(inp.items) ? inp.items.slice(0, 20) : []).forEach(it => {
+          if (!it || typeof it !== "object") return;
+          const meal = MEALS.some(m => m[0] === it.meal) ? it.meal : defaultMeal();
+          const qty = inRange(it.qty, 0.25, 10) ? Math.round(it.qty * 4) / 4 : 1;
+          const f = it.food_id ? all.find(x => x.id === it.food_id) : null;
+          let e = null;
+          if (f) e = { n: f.n, u: f.u, kcal: f.kcal, p: f.p };
+          else if (typeof it.name === "string" && it.name.trim() && inRange(it.kcal, 0, 3000)) {
+            e = { n: it.name.trim().slice(0, 60), u: typeof it.portion === "string" && it.portion.trim() ? it.portion.trim().slice(0, 40) : "1 portion", kcal: Math.round(it.kcal), p: inRange(it.protein_g, 0, 200) ? r1(it.protein_g) : 0 };
+          }
+          if (!e) return;
+          d.food.push({ id: uid(), meal, qty, ...e });
+          added.push(`${qty === 1 ? "" : qty + " × "}${e.n}`);
+        });
+        if (!added.length) throw new Error("No foods added. Use a food_id from the FOOD LIST, or give a name with kcal per portion.");
+        const tot = foodTotals(t);
+        act(`Food diary: ${added.join(", ")}`);
+        msg = `Added ${added.join(", ")}. Today is now ${Math.round(tot.kcal)} of ${c.target} kcal and ${Math.round(tot.p)} of ${c.protein} g protein.`;
+        break;
+      }
+      case "remove_food": {
+        const ids = Array.isArray(inp.ids) ? inp.ids.map(String) : [];
+        const gone = (d.food || []).filter(e => ids.includes(e.id)).map(e => e.n);
+        if (!gone.length) throw new Error("No matching food entry ids.");
+        d.food = d.food.filter(e => !ids.includes(e.id));
+        act(`Removed from food diary: ${gone.join(", ")}`);
+        msg = `Removed ${gone.join(", ")}.`;
+        break;
+      }
+      case "log_workout": {
+        if (!KINDS.includes(inp.kind)) throw new Error("kind must be one of " + KINDS.join(", "));
+        const x = { id: uid(), d: t, at: nowHM(), kind: inp.kind, mins: inRange(inp.minutes, 1, 600) ? Math.round(inp.minutes) : inp.kind === "stretch" ? 10 : 0 };
+        state.workouts.push(x);
+        const plan = WEEK[new Date().getDay()].kind, cardio = ["walk", "cycle", "swim", "sport"].includes(x.kind), strength = x.kind === "A" || x.kind === "B";
+        const counts = (plan === "A" || plan === "B") ? strength : plan === "walk" ? cardio : true;
+        if (counts) tick("train");
+        act(`Workout: ${woName(x)}${counts ? " (today's workout ticked)" : ""}`);
+        msg = `Logged ${woName(x)}.` + (counts ? " Today's workout task is ticked." : " Today's planned workout is still open.");
+        break;
+      }
+      case "log_reading": {
+        if (inp.type === "bp") {
+          if (!inRange(inp.systolic, 60, 260) || !inRange(inp.diastolic, 30, 160)) throw new Error("Give systolic 60-260 and diastolic 30-160.");
+          state.readings.push({ id: uid(), d: t, time: nowHM(), type: "bp", sys: Math.round(inp.systolic), dia: Math.round(inp.diastolic), pulse: inRange(inp.pulse, 30, 220) ? Math.round(inp.pulse) : null });
+          const label = bpClass(inp.systolic, inp.diastolic)[0];
+          act(`Blood pressure ${Math.round(inp.systolic)}/${Math.round(inp.diastolic)}: ${label}`);
+          msg = `Saved. Category: ${label}.`;
+        } else if (inp.type === "sugar") {
+          const unit = inp.unit === "mg" ? "mg" : "mmol", mg = unit === "mmol" ? inp.value * 18 : inp.value;
+          if (!inRange(mg, 20, 600)) throw new Error("Sugar reading out of range. mmol/L is usually 3-20, mg/dL 60-400.");
+          const when = ["fasting", "after", "random"].includes(inp.when) ? inp.when : "random";
+          state.readings.push({ id: uid(), d: t, time: nowHM(), type: "sugar", mg, unit, when });
+          const label = sugarClass(mg, when)[0];
+          act(`Blood sugar ${inp.value} ${unit === "mmol" ? "mmol/L" : "mg/dL"}: ${label}`);
+          msg = `Saved. Category: ${label}.`;
+        } else throw new Error("type must be bp or sugar.");
+        break;
+      }
+      case "save_note": {
+        const f = typeof inp.fact === "string" ? inp.fact.trim().slice(0, 160) : "";
+        if (!f) throw new Error("fact is empty.");
+        if (!state.notes.some(n => n.t.toLowerCase() === f.toLowerCase())) state.notes.push({ id: uid(), t: f });
+        act(`Saved to notes: ${f}`);
+        msg = "Saved to their notes.";
+        break;
+      }
+      case "add_task": {
+        const time = String(inp.time || ""), text = typeof inp.text === "string" ? inp.text.trim().slice(0, 60) : "";
+        if (!/^([01]\d|2[0-3]):[0-5]\d$/.test(time) || !text) throw new Error("Give time as 24-hour HH:MM and a short text.");
+        state.custom.push({ id: uid(), time, t: text });
+        act(`New daily task: ${fmt12(time)} ${text}`);
+        msg = "Added to their daily checklist.";
+        break;
+      }
+      case "add_shopping": {
+        const items = (Array.isArray(inp.items) ? inp.items : []).filter(x => typeof x === "string" && x.trim()).map(x => x.trim().slice(0, 60)).slice(0, 30);
+        if (!items.length) throw new Error("No items given.");
+        items.forEach(v => { const have = state.grocery.find(g => g.t.toLowerCase() === v.toLowerCase()); if (have) have.done = false; else state.grocery.push({ id: "g" + uid(), t: v, done: false }); });
+        act(`Shopping list: ${items.join(", ")}`);
+        msg = "Added to the shopping list.";
+        break;
+      }
+      default: throw new Error("Unknown tool " + name);
+    }
+    persist();
+    return msg;
+  }
+
   async function askWithKey(system, messages, onText, signal) {
     if (!AnthropicSDK) AnthropicSDK = (await import(SDK_URL)).default;
     const Anthropic = AnthropicSDK;
     const client = new Anthropic({ apiKey: getKey(), dangerouslyAllowBrowser: true });
+    const tools = TOOL_SPECS.map(s => ({ ...s, eager_input_streaming: true }));
+    const msgs = messages.slice();
+    let shown = "";
     try {
-      const stream = client.beta.messages.stream({
-        model: "claude-opus-5-5",
-        max_tokens: 16000,
-        output_config: { effort: "low" },
-        betas: ["server-side-fallback-2026-07-01"],
-        fallbacks: "default",
-        system,
-        messages
-      }, { signal });
-      let text = "";
-      for await (const ev of stream) {
-        if (ev.type === "content_block_delta" && ev.delta.type === "text_delta") { text += ev.delta.text; onText(text); }
+      // manual tool loop: stream a turn, run any tool calls, send the results back
+      for (let round = 0; round < 6; round++) {
+        const stream = client.beta.messages.stream({
+          model: "claude-opus-5-5",
+          max_tokens: 16000,
+          output_config: { effort: "medium" },
+          betas: ["server-side-fallback-2026-07-01"],
+          fallbacks: "default",
+          system,
+          tools,
+          messages: msgs
+        }, { signal });
+        let text = "";
+        for await (const ev of stream) {
+          if (ev.type === "content_block_delta" && ev.delta.type === "text_delta") { text += ev.delta.text; onText(shown + text); }
+        }
+        const final = await stream.finalMessage();
+        if (final.stop_reason === "refusal") throw { code: "refusal" };
+        if (text) shown += (shown ? "\n\n" : "") + text;
+        if (final.stop_reason !== "tool_use") break;
+        msgs.push({ role: "assistant", content: final.content });
+        const results = final.content.filter(b => b.type === "tool_use").map(b => {
+          try {
+            const input = typeof b.input === "string" ? JSON.parse(b.input) : b.input;
+            return { type: "tool_result", tool_use_id: b.id, content: runTool(b.name, input) };
+          } catch (err) {
+            return { type: "tool_result", tool_use_id: b.id, content: String(err && err.message || err), is_error: true };
+          }
+        });
+        msgs.push({ role: "user", content: results });
       }
-      const final = await stream.finalMessage();
-      if (final.stop_reason === "refusal") throw { code: "refusal" };
-      return text;
+      return shown;
     } catch (e) {
       if (e && e.code === "refusal") throw e;
       if (e instanceof Anthropic.APIUserAbortError) throw { code: "cancelled" };
@@ -1763,22 +1948,28 @@ How to help:
   async function sendChat(text) {
     text = (text || "").trim();
     if (!text || chatBusy || aiMode() === "none") return;
+    // snapshot everything but the chat, so the coach's changes can be undone
+    const snap = JSON.stringify({ ...state, chat: [] });
     state.chat.push({ role: "user", content: text, at: Date.now() });
-    chatErr = ""; chatBusy = true; tab = "coach";
+    chatErr = ""; chatBusy = true; tab = "coach"; liveActions = [];
     save(); scrollChat();
     chatCtl = new AbortController();
-    const onText = full => { const el = document.getElementById("bubble-live"); if (el) el.innerHTML = md(stripRemember(full)) || "<p>Thinking…</p>"; };
+    const onText = full => { const el = document.getElementById("live-text"); if (el) el.innerHTML = md(stripRemember(full)) || "<p>Thinking…</p>"; };
+    let reply = "";
     try {
       const turns = chatTurns(), intro = COACH_RULES + "\n\n" + coachContext();
-      const reply = aiMode() === "claude"
-        ? (await sampleFn([{ role: "user", content: intro }, { role: "assistant", content: "Got it. I have your data and I'm ready to help." }, ...turns],
-            { cache: false, signal: chatCtl.signal, onText: ({ text: t }) => onText(t) })).text
+      reply = aiMode() === "claude"
+        ? (await sampleFn([{ role: "user", content: intro }, { role: "assistant", content: "Got it. I have your data and I'm ready to help." }, ...turns], {
+            cache: false, signal: chatCtl.signal, onText: ({ text: t }) => onText(t),
+            tools: TOOL_SPECS.map(s => ({ name: s.name, description: s.description, inputSchema: s.input_schema, execute: input => runTool(s.name, input) }))
+          })).text
         : await askWithKey(intro, turns, onText, chatCtl.signal);
-      const { clean, facts } = extractRemember(reply);
-      const added = facts.filter(f => !state.notes.some(n => n.t.toLowerCase() === f.toLowerCase()));
-      added.forEach(f => state.notes.push({ id: uid(), t: f }));
-      state.chat.push({ role: "assistant", content: clean || "…", at: Date.now(), saved: added });
     } catch (e) { chatErr = chatErrText(e); }
+    if (reply || liveActions.length) {
+      const m = { role: "assistant", content: stripRemember(reply) || "Done.", at: Date.now(), actions: liveActions.slice() };
+      state.chat.push(m);
+      if (m.actions.length) lastUndo = { at: m.at, snap };
+    }
     chatBusy = false; chatCtl = null;
     if (state.chat.length > 80) state.chat = state.chat.slice(-80);
     save(); scrollChat();
@@ -1786,6 +1977,8 @@ How to help:
   function scrollChat() { requestAnimationFrame(() => { const el = document.getElementById("chat-end"); if (el) el.scrollIntoView({ block: "end" }); }); }
   const QUICK = [
     "What did I miss today, and what can I still do?",
+    "I had 2 eggs and a roti for breakfast",
+    "I drank 5 glasses of water and walked 30 minutes",
     "I don't eat vegetables. What can I eat instead?",
     "Plan my meals for tomorrow",
     "I ate too much at a dawat. What now?",
@@ -1829,22 +2022,22 @@ How to help:
     return `
       <div class="panel hero">
         <p class="label">Your coach · ${mode === "claude" ? "using your Claude account" : "using your API key"}</p>
-        <p class="hero-line">Tell me what you did, what you <em>can't</em> do, or what went wrong. I'll adjust your plan.</p>
-        <p class="small muted">I see your checklist, food, workouts, weight and notes. I'm not a doctor: for anything worrying, see one.</p>
+        <p class="hero-line">Tell me what you <em>did, ate or drank</em>, and I'll tick it off and log it for you.</p>
+        <p class="small muted">Try "I had 2 eggs and a roti, and drank 3 glasses of water". I can also log workouts, weight, sleep, BP and sugar, add tasks and shopping items, and remember things about you. I'm not a doctor: for anything worrying, see one.</p>
       </div>
       ${notesPanel}
       <div class="chat" aria-live="polite">
         ${!msgs.length ? `<div class="chips">${QUICK.map(q => `<button data-ask="${esc(q)}">${esc(q)}</button>`).join("")}</div>` : ""}
         ${msgs.map(m => m.role === "user"
           ? `<div class="bubble me">${esc(m.content)}</div>`
-          : `<div class="bubble bot">${md(m.content)}${m.saved && m.saved.length ? `<span class="saved">Saved to notes: ${m.saved.map(esc).join("; ")}</span>` : ""}</div>`).join("")}
-        ${chatBusy ? `<div class="bubble bot" id="bubble-live"><p>Thinking…</p></div>` : ""}
+          : `<div class="bubble bot">${md(m.content)}${m.saved && m.saved.length ? `<span class="saved">Saved to notes: ${m.saved.map(esc).join("; ")}</span>` : ""}${m.actions && m.actions.length ? `<div class="acts-wrap ${m.undone ? "undone" : ""}"><span class="label">${m.undone ? "Undone" : "Updated in your app"}</span>${actionsHtml(m.actions)}${lastUndo && lastUndo.at === m.at && !m.undone ? `<button class="btn small" data-undo="${m.at}">Undo these changes</button>` : ""}</div>` : ""}</div>`).join("")}
+        ${chatBusy ? `<div class="bubble bot" id="bubble-live"><div id="live-text"><p>Thinking…</p></div><div id="live-actions"></div></div>` : ""}
         ${chatErr ? `<p class="small" style="color:var(--danger)">${esc(chatErr)}</p>` : ""}
         ${msgs.length && !chatBusy ? `<div class="chips">${QUICK.slice(0, 3).map(q => `<button data-ask="${esc(q)}">${esc(q)}</button>`).join("")}</div>` : ""}
         <span id="chat-end"></span>
       </div>
       <div class="composer">
-        <textarea id="chat-in" rows="1" placeholder="Message your coach" aria-label="Message your coach" ${chatBusy ? "disabled" : ""}></textarea>
+        <textarea id="chat-in" rows="1" placeholder="Tell me what you did or ate…" aria-label="Message your coach" ${chatBusy ? "disabled" : ""}></textarea>
         ${chatBusy ? `<button class="btn" id="chat-stop">Stop</button>` : `<button class="btn primary" id="chat-send">Send</button>`}
       </div>
       <div class="row">${msgs.length ? `<button class="btn small" id="chat-clear">Clear chat</button>` : ""}</div>
@@ -2062,7 +2255,11 @@ How to help:
   });
 
   app.addEventListener("keydown", e => {
-    if (e.target.id === "chat-in" && e.key === "Enter" && !e.shiftKey && !e.isComposing) { e.preventDefault(); sendChat(e.target.value); }
+    if ((e.target.id === "chat-in" || e.target.id === "quick-chat") && e.key === "Enter" && !e.shiftKey && !e.isComposing) {
+      e.preventDefault();
+      if (aiMode() === "none") { tab = "coach"; return render(); }
+      sendChat(e.target.value);
+    }
   });
 
   app.addEventListener("input", e => {
@@ -2155,8 +2352,22 @@ How to help:
       return sendChat(t.dataset.ask);
     }
     if (t.dataset.delnote) { state.notes = state.notes.filter(n => n.id !== t.dataset.delnote); return save(); }
+    if (t.dataset.undo) {
+      if (!lastUndo || String(lastUndo.at) !== t.dataset.undo) return;
+      const chat = state.chat;
+      state = ensure(JSON.parse(lastUndo.snap));
+      state.chat = chat;
+      const m = chat.find(x => String(x.at) === t.dataset.undo); if (m) m.undone = true;
+      lastUndo = null;
+      return save();
+    }
     switch (t.id) {
       case "chat-send": { const box = document.getElementById("chat-in"); return sendChat(box.value); }
+      case "quick-send": {
+        const v = document.getElementById("quick-chat").value;
+        if (aiMode() === "none") { tab = "coach"; render(); return window.scrollTo({ top: 0 }); }
+        return sendChat(v);
+      }
       case "chat-stop": if (chatCtl) chatCtl.abort(); return;
       case "chat-clear": state.chat = []; chatErr = ""; return save();
       case "note-add": { const v = document.getElementById("note-new").value.trim(); if (v) { state.notes.push({ id: uid(), t: v }); return save(); } return; }

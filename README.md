@@ -16,6 +16,8 @@ The first time you open it, it asks for your age, height, weight, activity and w
 
 **Coach**
 - A chat coach that sees your checklist, food, workouts, weight, sleep, readings and notes. Ask what you missed, what to eat instead of vegetables, or how to recover from a bad day.
+- It updates the app from what you tell it: "I had 2 eggs and a roti and walked 30 minutes" ticks breakfast and your workout, logs the food and the walk. It can also log water, steps, weight, waist, sleep, mood, BP and sugar, add your own daily tasks and shopping items, and fix mistakes. Every change is listed under its reply with an Undo button.
+- The Today tab has a "Tell your coach what you did" box that sends straight to the chat.
 - Remembers lasting facts about you ("I don't eat vegetables", "bad left knee") in an editable notes list.
 - In the private Claude link it uses your Claude account. In the installed app it uses your own Anthropic API key, which stays only on your phone (never in the code, the repo or backups).
 
