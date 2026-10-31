@@ -220,9 +220,18 @@ a.watch { color: var(--accent); font-weight: 700; font-size: .88rem; text-underl
 .restbar { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 64px); z-index: 4; display: flex; justify-content: space-between; align-items: center; gap: 10px; background: var(--accent); color: var(--accent-ink); border-radius: 12px; padding: 10px 14px; font-weight: 700; }
 .restbar .num { font-size: 1.3rem; }
 .restbar button { background: var(--accent-ink); color: var(--accent); border: 0; border-radius: 8px; padding: 6px 10px; font-weight: 700; }
-.phases { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; }
-.phase { border: 1px solid var(--line); border-radius: 12px; padding: 12px 14px; display: grid; gap: 4px; }
-.phase.on { border-color: var(--accent); background: var(--accent-soft); }
+/* The 12-week plan as a transit line (idea from Awwwards winner AP Transit): passed phases are filled stations,
+   the current one is ringed, the rest are still ahead on the line. */
+.phases { display: grid; gap: 0; }
+.phase { position: relative; padding: 0 0 20px 36px; display: grid; gap: 4px; }
+.phase:last-child { padding-bottom: 0; }
+.phase::before { content: ""; position: absolute; left: 9px; top: 20px; bottom: -2px; width: 3px; border-radius: 2px; background: var(--line); }
+.phase:last-child::before { display: none; }
+.phase::after { content: ""; position: absolute; left: 1px; top: 2px; width: 19px; height: 19px; box-sizing: border-box; border-radius: 50%; border: 3px solid var(--line); background: var(--surface); }
+.phase.done::before, .phase.done::after { background: var(--accent); border-color: var(--accent); }
+.phase.on::after { border-color: var(--accent); box-shadow: 0 0 0 5px var(--accent-soft); }
+.phase.on h3 { color: var(--accent); }
+.phase.on .label::after { content: " · you are here"; color: var(--accent); font-weight: 700; }
 
 /* Food */
 .plate-wrap { display: grid; grid-template-columns: 170px 1fr; gap: 18px; align-items: center; }
@@ -918,7 +927,7 @@ footer { max-width: 1040px; margin: 8px auto 0; font-size: .82rem; color: var(--
       <div class="panel">
         <h2>The 12-week plan</h2>
         <p class="small muted">Built for a heavier body that's starting out: low impact, kind to knees and back, done at home with a chair, a step and a backpack. No running or jumping until your knees feel good and you've lost your first 10%.</p>
-        <div class="phases">${PHASES.map(p => `<div class="phase ${p.n === c.phase ? "on" : ""}"><span class="label">${p.weeks}</span><h3>${p.name}</h3><p class="small">Strength: ${p.sets} × ${p.reps}, rest ${p.rest} s</p><p class="small">Cardio: ${p.walk}</p><p class="small muted">${p.effort}</p></div>`).join("")}</div>
+        <div class="phases">${PHASES.map(p => `<div class="phase ${p.n === c.phase ? "on" : p.n < c.phase ? "done" : ""}"><span class="label">${p.weeks}</span><h3>${p.name}</h3><p class="small">Strength: ${p.sets} × ${p.reps}, rest ${p.rest} s</p><p class="small">Cardio: ${p.walk}</p><p class="small muted">${p.effort}</p></div>`).join("")}</div>
         <p class="small muted">After week 12, repeat phase 3 with more weight, or ask a trainer about gym machines.</p>
       </div>
       <div class="grid2">
